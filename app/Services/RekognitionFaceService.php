@@ -64,6 +64,7 @@ class RekognitionFaceService
                         'FaceIds' => $oldFaceIds,
                     ]);
                 } catch (\Throwable $e) {
+                    // Không chặn luồng nếu xóa face cũ trên Rekognition lỗi
                 }
             }
 
@@ -92,6 +93,7 @@ class RekognitionFaceService
         }
 
         StudentFace::create([
+            'id' => $this->nextStudentFaceId(),
             'maSV' => $student->maSV,
             'rekognition_face_id' => $faceRecord['FaceId'],
             'external_image_id' => $faceRecord['ExternalImageId'] ?? $student->maSV,
@@ -108,6 +110,7 @@ class RekognitionFaceService
             throw new \RuntimeException('Avatar trống.');
         }
 
+        // Avatar mới: URL Cloudinary
         if (Str::startsWith($avatar, ['http://', 'https://'])) {
             $response = Http::timeout(30)->get($avatar);
 
@@ -118,6 +121,7 @@ class RekognitionFaceService
             return $response->body();
         }
 
+        // Avatar cũ: path local
         $relativePath = ltrim($avatar, '/');
 
         $possiblePaths = [
@@ -138,5 +142,10 @@ class RekognitionFaceService
         }
 
         throw new \RuntimeException('Không tìm thấy file avatar trong storage.');
+    }
+
+    private function nextStudentFaceId(): int
+    {
+        return ((int) StudentFace::max('id')) + 1;
     }
 }
