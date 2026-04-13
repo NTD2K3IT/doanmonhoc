@@ -6,14 +6,13 @@
 @section('content')
 <style>
     .scan-page {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+        display: grid;
+        gap: 14px;
     }
 
     .scan-card,
-    .scan-history-wrap,
-    .scan-fallback {
+    .scan-fallback,
+    .history-wrap {
         background: #fff;
         border: 1px solid var(--border);
         border-radius: 20px;
@@ -22,38 +21,33 @@
 
     .scan-card,
     .scan-fallback {
-        padding: 22px;
+        padding: 16px;
     }
 
-    .scan-head {
+    .scan-head,
+    .history-head {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
-        gap: 14px;
-        margin-bottom: 16px;
+        gap: 10px;
+        margin-bottom: 14px;
     }
 
-    .scan-title {
-        font-size: 22px;
+    .scan-title,
+    .history-title {
+        font-size: 18px;
         font-weight: 800;
         letter-spacing: -0.03em;
         color: var(--text);
-        margin-bottom: 6px;
     }
 
-    .scan-subtitle {
-        font-size: 14px;
-        line-height: 1.6;
-        color: var(--text-soft);
-        max-width: 680px;
-    }
-
-    .scan-badge {
+    .scan-badge,
+    .history-counter {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 36px;
-        padding: 0 14px;
+        min-height: 32px;
+        padding: 0 12px;
         border-radius: 999px;
         background: var(--primary-soft);
         color: var(--primary);
@@ -63,14 +57,14 @@
     }
 
     .scan-reader-box {
-        min-height: 360px;
+        min-height: 320px;
         border: 1px dashed #cbd5e1;
         border-radius: 18px;
         background: var(--surface-soft);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 18px;
+        padding: 16px;
     }
 
     #student-qr-reader {
@@ -84,11 +78,11 @@
         color: var(--text-soft);
         font-size: 14px;
         line-height: 1.7;
-        max-width: 260px;
+        max-width: 240px;
     }
 
     .scan-actions {
-        margin-top: 16px;
+        margin-top: 14px;
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
@@ -97,9 +91,10 @@
     .scan-btn,
     .scan-btn-secondary {
         appearance: none;
-        border-radius: 12px;
-        padding: 11px 16px;
-        font-size: 13px;
+        min-height: 46px;
+        border-radius: 14px;
+        padding: 0 16px;
+        font-size: 14px;
         font-weight: 700;
         cursor: pointer;
         transition: 0.2s ease;
@@ -118,21 +113,9 @@
         color: var(--text);
     }
 
-    .scan-btn:hover,
-    .scan-btn-secondary:hover {
-        transform: translateY(-1px);
-    }
-
-    .scan-btn:disabled,
-    .scan-btn-secondary:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none;
-    }
-
     .scan-result {
-        margin-top: 16px;
-        padding: 14px 16px;
+        margin-top: 14px;
+        padding: 13px 14px;
         border-radius: 14px;
         font-size: 13px;
         font-weight: 600;
@@ -154,23 +137,16 @@
         color: #dc2626;
     }
 
-    .fallback-title {
-        font-size: 15px;
-        font-weight: 800;
-        color: var(--text);
-        margin-bottom: 6px;
-    }
-
-    .fallback-subtitle {
+    .fallback-note {
         font-size: 13px;
         color: var(--text-soft);
         line-height: 1.6;
-        margin-bottom: 14px;
+        margin-bottom: 12px;
     }
 
     .manual-input {
         width: 100%;
-        min-height: 96px;
+        min-height: 88px;
         padding: 12px 14px;
         border: 1px solid var(--border);
         border-radius: 14px;
@@ -184,45 +160,14 @@
         box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.08);
     }
 
-    .scan-history-wrap {
+    .history-wrap {
         overflow: hidden;
     }
 
-    .history-header {
-        padding: 20px 22px;
+    .history-head {
+        padding: 16px;
         border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 14px;
-    }
-
-    .history-title {
-        font-size: 17px;
-        font-weight: 800;
-        color: var(--text);
-        margin-bottom: 4px;
-    }
-
-    .history-subtitle {
-        font-size: 13px;
-        color: var(--text-soft);
-        line-height: 1.6;
-    }
-
-    .history-counter {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 42px;
-        height: 34px;
-        padding: 0 12px;
-        border-radius: 999px;
-        background: var(--primary-soft);
-        color: var(--primary);
-        font-size: 12px;
-        font-weight: 800;
-        white-space: nowrap;
+        margin-bottom: 0;
     }
 
     .history-table-wrap {
@@ -236,7 +181,7 @@
     }
 
     .history-table thead th {
-        padding: 14px 16px;
+        padding: 13px 14px;
         background: var(--surface-soft);
         border-bottom: 1px solid var(--border);
         text-align: left;
@@ -249,26 +194,21 @@
     }
 
     .history-table tbody td {
-        padding: 16px;
+        padding: 14px;
         border-bottom: 1px solid var(--border);
         font-size: 14px;
         color: var(--text);
-        vertical-align: middle;
     }
 
     .history-table tbody tr:last-child td {
         border-bottom: none;
     }
 
-    .history-table tbody tr:hover {
-        background: #fafcff;
-    }
-
     .history-status {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 32px;
+        min-height: 30px;
         padding: 0 12px;
         border-radius: 999px;
         background: #ecfdf3;
@@ -280,31 +220,24 @@
     }
 
     .empty-box {
-        padding: 28px 22px;
+        padding: 24px 18px;
         text-align: center;
         color: var(--text-soft);
         font-size: 14px;
         line-height: 1.7;
     }
 
-    @media (max-width: 768px) {
-        .scan-card,
-        .scan-fallback {
-            padding: 18px;
+    @media (max-width: 640px) {
+        .scan-reader-box {
+            min-height: 280px;
+            padding: 12px;
         }
 
         .scan-head,
-        .history-header {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .scan-title {
-            font-size: 20px;
-        }
-
+        .history-head,
         .scan-actions {
             flex-direction: column;
+            align-items: stretch;
         }
 
         .scan-btn,
@@ -339,13 +272,13 @@
             background: #fff;
             border: 1px solid var(--border);
             border-radius: 16px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             overflow: hidden;
         }
 
         .history-table tbody td {
             border-bottom: 1px solid var(--border);
-            padding: 12px 14px;
+            padding: 11px 12px;
         }
 
         .history-table tbody td:last-child {
@@ -368,20 +301,13 @@
 <div class="scan-page">
     <section class="scan-card">
         <div class="scan-head">
-            <div>
-                <div class="scan-title">Quét mã QR sự kiện</div>
-                <div class="scan-subtitle">
-                    Mở camera để quét nhanh mã QR của sự kiện. Hệ thống sẽ tự động ghi nhận điểm danh cho tài khoản đang đăng nhập.
-                </div>
-            </div>
+            <div class="scan-title">Quét mã QR sự kiện</div>
             <div class="scan-badge">{{ $student->maSV }}</div>
         </div>
 
         <div class="scan-reader-box">
             <div id="student-qr-reader">
-                <div class="scan-placeholder">
-                    Nhấn <strong>Bật camera</strong> để bắt đầu quét mã QR sự kiện.
-                </div>
+                <div class="scan-placeholder">Nhấn <strong>Bật camera</strong> để bắt đầu quét mã QR sự kiện.</div>
             </div>
         </div>
 
@@ -393,8 +319,8 @@
     </section>
 
     <section class="scan-fallback">
-        <div class="fallback-title">Nhập mã thủ công</div>
-        <div class="fallback-subtitle">Dùng khi thiết bị không mở được camera hoặc mã QR khó quét.</div>
+        <div class="scan-title" style="font-size:16px;">Nhập mã thủ công</div>
+        <div class="fallback-note">Dùng khi camera không mở được hoặc mã QR khó quét.</div>
 
         <textarea id="manual-qr-input" class="manual-input" placeholder="Ví dụ: 1 hoặc 15 hoặc 28"></textarea>
 
@@ -404,63 +330,58 @@
         </div>
     </section>
 
-    <section class="scan-history-wrap">
-        <div class="history-header">
-            <div>
-                <div class="history-title">Lịch sử gần đây</div>
-                <div class="history-subtitle">10 lượt điểm danh gần nhất được ghi nhận trên hệ thống.</div>
-            </div>
+    <section class="history-wrap">
+        <div class="history-head">
+            <div class="history-title">Lịch sử gần đây</div>
             <div class="history-counter">{{ count($recentAttendances) }}</div>
         </div>
 
         @if (!empty($recentAttendances) && count($recentAttendances) > 0)
-            <div class="history-table-wrap" id="attendance-history-table-wrap">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Sự kiện</th>
-                            <th>Ngày</th>
-                            <th>Giờ</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                    </thead>
-                    <tbody id="attendance-history-body">
-                        @foreach ($recentAttendances as $item)
-                            <tr>
-                                <td data-label="Sự kiện">{{ $item['event_name'] }}</td>
-                                <td data-label="Ngày">{{ $item['date'] }}</td>
-                                <td data-label="Giờ">{{ $item['time'] }}</td>
-                                <td data-label="Trạng thái"><span class="history-status">{{ $item['status'] }}</span></td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+        <div class="history-table-wrap" id="attendance-history-table-wrap">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Sự kiện</th>
+                        <th>Ngày</th>
+                        <th>Giờ</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody id="attendance-history-body">
+                    @foreach ($recentAttendances as $item)
+                    <tr>
+                        <td data-label="Sự kiện">{{ $item['event_name'] }}</td>
+                        <td data-label="Ngày">{{ $item['date'] }}</td>
+                        <td data-label="Giờ">{{ $item['time'] }}</td>
+                        <td data-label="Trạng thái"><span class="history-status">{{ $item['status'] }}</span></td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
         @else
-            <div class="empty-box" id="attendance-history-empty">
-                Chưa có dữ liệu điểm danh gần đây.
-            </div>
+        <div class="empty-box" id="attendance-history-empty">Chưa có dữ liệu điểm danh gần đây.</div>
 
-            <div class="history-table-wrap" style="display:none;" id="attendance-history-table-wrap">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Sự kiện</th>
-                            <th>Ngày</th>
-                            <th>Giờ</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                    </thead>
-                    <tbody id="attendance-history-body"></tbody>
-                </table>
-            </div>
+        <div class="history-table-wrap" style="display:none;" id="attendance-history-table-wrap">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Sự kiện</th>
+                        <th>Ngày</th>
+                        <th>Giờ</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody id="attendance-history-body"></tbody>
+            </table>
+        </div>
         @endif
     </section>
 </div>
 
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const resultBox = document.getElementById('student-scan-result');
         const manualInput = document.getElementById('manual-qr-input');
         const manualSubmitBtn = document.getElementById('manual-submit-btn');
@@ -468,7 +389,7 @@
         const historyBody = document.getElementById('attendance-history-body');
         const historyEmpty = document.getElementById('attendance-history-empty');
         const historyTableWrap = document.getElementById('attendance-history-table-wrap');
-        const checkInUrl = '{{ route('sinhvien.scan_qr.check_in') }}';
+        const checkInUrl = '{{ url(' / sinhvien / quet - ma - diem - danh / check - in ') }}';
         const csrfToken = '{{ csrf_token() }}';
         const readerElement = document.getElementById('student-qr-reader');
         const toggleCameraBtn = document.getElementById('toggle-camera-btn');
@@ -484,11 +405,7 @@
         }
 
         function renderCameraOffState() {
-            readerElement.innerHTML = `
-                <div class="scan-placeholder">
-                    Nhấn <strong>Bật camera</strong> để bắt đầu quét mã QR sự kiện.
-                </div>
-            `;
+            readerElement.innerHTML = '<div class="scan-placeholder">Nhấn <strong>Bật camera</strong> để bắt đầu quét mã QR sự kiện.</div>';
         }
 
         function setToggleButtonState() {
@@ -517,13 +434,8 @@
                 </tr>
             `;
 
-            if (historyEmpty) {
-                historyEmpty.remove();
-            }
-
-            if (historyTableWrap) {
-                historyTableWrap.style.display = 'block';
-            }
+            if (historyEmpty) historyEmpty.remove();
+            if (historyTableWrap) historyTableWrap.style.display = 'block';
 
             historyBody.insertAdjacentHTML('afterbegin', rowHtml);
 
@@ -541,7 +453,9 @@
                         'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ qr_payload: qrPayload }),
+                    body: JSON.stringify({
+                        qr_payload: qrPayload
+                    }),
                 });
 
                 const result = await response.json();
@@ -552,43 +466,33 @@
                 }
 
                 showResult(result.message, 'success');
-
-                if (result.attendance) {
-                    prependHistoryRow(result.attendance);
-                }
+                if (result.attendance) prependHistoryRow(result.attendance);
             } catch (error) {
                 showResult('Lỗi kết nối khi gửi điểm danh.', 'error');
             }
         }
 
-        manualSubmitBtn.addEventListener('click', function () {
+        manualSubmitBtn.addEventListener('click', function() {
             const value = manualInput.value.trim();
-
             if (!value) {
                 showResult('Vui lòng nhập mã hoạt động.', 'error');
                 return;
             }
-
             submitAttendance(value);
         });
 
-        manualClearBtn.addEventListener('click', function () {
+        manualClearBtn.addEventListener('click', function() {
             manualInput.value = '';
         });
 
         if (typeof Html5Qrcode === 'undefined') {
-            readerElement.innerHTML = `
-                <div class="scan-placeholder">
-                    Không tải được thư viện quét QR. Vui lòng kiểm tra kết nối mạng.
-                </div>
-            `;
+            readerElement.innerHTML = '<div class="scan-placeholder">Không tải được thư viện quét QR. Vui lòng kiểm tra kết nối mạng.</div>';
             toggleCameraBtn.disabled = true;
             return;
         }
 
         async function startScanner() {
             if (scannerRunning || scannerBusy) return;
-
             scannerBusy = true;
             setToggleButtonState();
 
@@ -596,16 +500,21 @@
                 readerElement.innerHTML = '';
                 html5QrCode = new Html5Qrcode('student-qr-reader');
 
-                await html5QrCode.start(
-                    { facingMode: 'environment' },
-                    { fps: 10, qrbox: 240 },
-                    async (decodedText) => {
-                        if (scanLock) return;
-                        scanLock = true;
-                        await submitAttendance(decodedText);
-                        setTimeout(() => { scanLock = false; }, 1500);
+                await html5QrCode.start({
+                        facingMode: 'environment'
+                    }, {
+                        fps: 10,
+                        qrbox: 220
                     },
-                    () => {}
+                    async (decodedText) => {
+                            if (scanLock) return;
+                            scanLock = true;
+                            await submitAttendance(decodedText);
+                            setTimeout(() => {
+                                scanLock = false;
+                            }, 1500);
+                        },
+                        () => {}
                 );
 
                 scannerRunning = true;
@@ -623,7 +532,6 @@
 
         async function stopScanner() {
             if (!scannerRunning || !html5QrCode || scannerBusy) return;
-
             scannerBusy = true;
             setToggleButtonState();
 
@@ -643,7 +551,7 @@
             setToggleButtonState();
         }
 
-        toggleCameraBtn.addEventListener('click', async function () {
+        toggleCameraBtn.addEventListener('click', async function() {
             if (scannerRunning) {
                 await stopScanner();
             } else {

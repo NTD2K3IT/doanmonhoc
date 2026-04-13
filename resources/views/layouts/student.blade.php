@@ -37,10 +37,9 @@
     @endphp
     <style>
         :root {
-            --page-bg: #f4f7fb;
-            --surface: rgba(255, 255, 255, 0.94);
-            --surface-solid: #ffffff;
-            --surface-soft: #f8fbff;
+            --page-bg: #f3f6fb;
+            --surface: #ffffff;
+            --surface-soft: #f8fafc;
             --surface-muted: #eef4ff;
             --text: #0f172a;
             --text-soft: #64748b;
@@ -48,18 +47,16 @@
             --border: #e2e8f0;
             --border-strong: #cbd5e1;
             --primary: #1d4ed8;
-            --primary-hover: #1e40af;
             --primary-soft: #eff6ff;
             --danger: #dc2626;
             --danger-soft: #fee2e2;
-            --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
-            --shadow-md: 0 16px 40px rgba(15, 23, 42, 0.08);
-            --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.14);
-            --radius-sm: 12px;
+            --shadow-sm: 0 2px 10px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 14px 34px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.16);
             --radius-md: 18px;
-            --radius-lg: 26px;
-            --sidebar-width: 292px;
-            --content-max: 1440px;
+            --radius-lg: 24px;
+            --sidebar-width: 276px;
+            --content-max: 1400px;
         }
 
         * {
@@ -76,14 +73,15 @@
 
         body {
             background:
-                radial-gradient(circle at top left, rgba(29, 78, 216, 0.08), transparent 26%),
-                radial-gradient(circle at top right, rgba(59, 130, 246, 0.06), transparent 18%),
-                linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
+                radial-gradient(circle at top left, rgba(29, 78, 216, 0.06), transparent 24%),
+                radial-gradient(circle at top right, rgba(59, 130, 246, 0.05), transparent 18%),
+                var(--page-bg);
             color: var(--text);
             line-height: 1.5;
         }
 
-        body.sidebar-open {
+        body.sidebar-open,
+        body.account-menu-open {
             overflow: hidden;
         }
 
@@ -103,17 +101,27 @@
             min-height: 100vh;
         }
 
-        .student-sidebar-backdrop {
+        .student-sidebar-backdrop,
+        .student-account-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.52);
+            background: rgba(15, 23, 42, 0.48);
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.25s ease;
-            z-index: 59;
+            transition: opacity 0.2s ease;
         }
 
-        .student-sidebar-backdrop.active {
+        .student-sidebar-backdrop {
+            z-index: 69;
+        }
+
+        .student-account-backdrop {
+            z-index: 74;
+            display: none;
+        }
+
+        .student-sidebar-backdrop.active,
+        .student-account-backdrop.active {
             opacity: 1;
             pointer-events: auto;
         }
@@ -124,15 +132,14 @@
             width: var(--sidebar-width);
             display: flex;
             flex-direction: column;
-            gap: 24px;
-            padding: 22px 18px;
-            background: rgba(255, 255, 255, 0.86);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            gap: 22px;
+            padding: 22px 16px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-right: 1px solid rgba(226, 232, 240, 0.96);
-            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35) inset;
-            z-index: 60;
-            transition: transform 0.25s ease;
+            z-index: 70;
+            transition: transform 0.22s ease;
         }
 
         .student-brand-row {
@@ -142,18 +149,18 @@
         }
 
         .student-brand {
+            flex: 1;
             display: flex;
             align-items: center;
             gap: 14px;
-            flex: 1;
             padding: 10px 10px 18px;
             border-bottom: 1px solid var(--border);
         }
 
         .student-brand-logo {
-            width: 50px;
-            height: 50px;
-            border-radius: 16px;
+            width: 48px;
+            height: 48px;
+            border-radius: 15px;
             background: linear-gradient(135deg, #1d4ed8, #2563eb);
             color: #fff;
             display: inline-flex;
@@ -161,7 +168,7 @@
             justify-content: center;
             font-size: 16px;
             font-weight: 800;
-            box-shadow: 0 12px 30px rgba(29, 78, 216, 0.22);
+            box-shadow: 0 12px 24px rgba(29, 78, 216, 0.22);
             flex-shrink: 0;
         }
 
@@ -182,18 +189,18 @@
         .student-mobile-toggle {
             appearance: none;
             border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.92);
+            background: #fff;
             color: var(--text);
+            width: 42px;
+            height: 42px;
             border-radius: 14px;
-            width: 44px;
-            height: 44px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            transition: 0.2s ease;
             box-shadow: var(--shadow-sm);
             flex-shrink: 0;
-            transition: 0.2s ease;
         }
 
         .sidebar-close-btn:hover,
@@ -211,45 +218,44 @@
             flex-direction: column;
             gap: 8px;
             overflow-y: auto;
-            padding-right: 2px;
         }
 
         .student-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
             min-height: 54px;
             padding: 0 14px;
             border-radius: 16px;
-            color: var(--text-soft);
+            display: flex;
+            align-items: center;
+            gap: 12px;
             border: 1px solid transparent;
+            color: var(--text-soft);
             transition: 0.2s ease;
         }
 
         .student-menu-item:hover {
+            background: var(--surface-soft);
+            border-color: rgba(226, 232, 240, 0.88);
             color: var(--text);
-            background: rgba(248, 250, 252, 0.92);
-            border-color: rgba(226, 232, 240, 0.85);
         }
 
         .student-menu-item.active {
-            color: var(--primary);
             background: var(--primary-soft);
             border-color: rgba(29, 78, 216, 0.14);
             box-shadow: inset 3px 0 0 var(--primary);
+            color: var(--primary);
         }
 
         .student-menu-icon {
             width: 30px;
             height: 30px;
             border-radius: 11px;
-            background: var(--surface-muted);
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            background: var(--surface-muted);
+            color: var(--text-soft);
             font-size: 11px;
             font-weight: 800;
-            color: var(--text-soft);
             flex-shrink: 0;
         }
 
@@ -259,9 +265,9 @@
         }
 
         .student-menu-copy {
+            min-width: 0;
             display: grid;
             gap: 1px;
-            min-width: 0;
         }
 
         .student-menu-title {
@@ -281,28 +287,6 @@
             text-overflow: ellipsis;
         }
 
-        .student-sidebar-foot {
-            margin-top: auto;
-            padding: 14px;
-            border-radius: 18px;
-            background: linear-gradient(180deg, #f8fbff, #eff6ff);
-            border: 1px solid rgba(191, 219, 254, 0.85);
-            display: grid;
-            gap: 6px;
-        }
-
-        .student-sidebar-foot-title {
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--text);
-        }
-
-        .student-sidebar-foot-text {
-            font-size: 12px;
-            color: var(--text-soft);
-            line-height: 1.6;
-        }
-
         .student-main {
             margin-left: var(--sidebar-width);
             padding: 24px;
@@ -314,40 +298,36 @@
         }
 
         .student-topbar {
-            min-height: 82px;
+            margin-bottom: 20px;
+            padding: 14px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: var(--shadow-md);
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            padding: 16px 18px;
-            margin-bottom: 22px;
-            border-radius: var(--radius-lg);
-            border: 1px solid rgba(226, 232, 240, 0.94);
-            background: rgba(255, 255, 255, 0.86);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: var(--shadow-md);
-            position: sticky;
-            top: 16px;
-            z-index: 30;
         }
 
         .student-topbar-left {
+            min-width: 0;
+            flex: 1;
             display: flex;
             align-items: center;
             gap: 14px;
-            min-width: 0;
-            flex: 1;
         }
 
         .student-topbar-copy {
-            display: grid;
-            gap: 4px;
             min-width: 0;
+            display: grid;
+            gap: 3px;
         }
 
         .student-topbar-role {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.08em;
@@ -355,56 +335,60 @@
         }
 
         .student-topbar-title {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
             letter-spacing: -0.03em;
             line-height: 1.15;
             color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .student-topbar-subtitle {
             font-size: 13px;
             color: var(--text-soft);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .student-topbar-right {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 12px;
-            flex-wrap: wrap;
         }
 
-        .student-user-chip {
+        .student-account-trigger {
+            appearance: none;
             display: flex;
             align-items: center;
-            gap: 12px;
-            min-width: 0;
-            padding: 8px 10px 8px 8px;
+            gap: 10px;
+            min-height: 48px;
+            padding: 6px 12px 6px 6px;
             border-radius: 16px;
-            background: rgba(248, 250, 252, 0.88);
-            border: 1px solid rgba(226, 232, 240, 0.92);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            background: #fff;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: 0.2s ease;
+            min-width: 0;
+            max-width: 280px;
+        }
+
+        .student-account-trigger:hover,
+        .student-account-trigger.active {
+            border-color: var(--border-strong);
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
         }
 
         .student-avatar {
-            width: 44px;
-            height: 44px;
+            width: 36px;
+            height: 36px;
             border-radius: 999px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            flex-shrink: 0;
-            font-weight: 800;
-            color: #fff;
             background: linear-gradient(135deg, var(--primary), #2563eb);
-            box-shadow: 0 10px 22px rgba(29, 78, 216, 0.2);
+            color: #fff;
+            font-weight: 800;
+            flex-shrink: 0;
         }
 
         .student-avatar img {
@@ -414,74 +398,141 @@
             display: block;
         }
 
-        .student-user-meta {
-            display: grid;
-            gap: 2px;
+        .student-account-meta {
             min-width: 0;
+            display: grid;
+            gap: 1px;
+            text-align: left;
         }
 
-        .student-user-name,
-        .student-user-code {
+        .student-account-name,
+        .student-account-code {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .student-user-name {
+        .student-account-name {
             font-size: 14px;
             font-weight: 700;
             color: var(--text);
         }
 
-        .student-user-code {
+        .student-account-code {
             font-size: 12px;
             color: var(--text-soft);
         }
 
-        .logout-btn {
+        .student-account-chevron {
+            color: var(--text-faint);
+            font-size: 14px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .student-account-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 280px;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.96);
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-6px);
+            transition: opacity 0.18s ease, transform 0.18s ease;
+            z-index: 75;
+        }
+
+        .student-account-menu.open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .student-account-panel {
+            padding: 12px;
+            border-radius: 16px;
+            background: var(--surface-soft);
+            border: 1px solid rgba(226, 232, 240, 0.88);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .student-account-panel .student-avatar {
+            width: 42px;
+            height: 42px;
+        }
+
+        .student-account-panel-meta {
+            min-width: 0;
+            display: grid;
+            gap: 2px;
+        }
+
+        .student-account-panel-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .student-account-panel-code {
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+
+        .student-account-section {
+            padding: 4px 2px 2px;
+        }
+
+        .student-account-section-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-faint);
+            margin-bottom: 8px;
+            padding: 0 8px;
+        }
+
+        .logout-btn-menu {
+            width: 100%;
+            min-height: 46px;
             appearance: none;
-            border: 1px solid rgba(220, 38, 38, 0.16);
+            border: 1px solid rgba(220, 38, 38, 0.14);
             background: #fff;
             color: var(--danger);
             border-radius: 14px;
-            min-height: 44px;
-            padding: 0 16px;
-            font-size: 13px;
+            padding: 0 14px;
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: var(--shadow-sm);
+            text-align: left;
             transition: 0.2s ease;
         }
 
-        .logout-btn:hover {
-            transform: translateY(-1px);
-            border-color: rgba(220, 38, 38, 0.24);
-            background: #fff8f8;
+        .logout-btn-menu:hover {
+            background: #fff7f7;
+            border-color: rgba(220, 38, 38, 0.22);
         }
 
         .student-content {
             min-width: 0;
         }
 
-        @media (max-width: 1180px) {
-            .student-topbar-title {
-                font-size: 22px;
-            }
-        }
-
         @media (max-width: 1024px) {
             .student-sidebar {
                 transform: translateX(-100%);
-                box-shadow: var(--shadow-lg);
             }
 
             .student-sidebar.open {
                 transform: translateX(0);
-            }
-
-            .student-main {
-                margin-left: 0;
-                padding: 16px;
+                box-shadow: var(--shadow-lg);
             }
 
             .sidebar-close-btn,
@@ -489,16 +540,22 @@
                 display: inline-flex;
             }
 
-            .student-topbar {
-                top: 12px;
+            .student-main {
+                margin-left: 0;
+                padding: 16px;
             }
         }
 
         @media (max-width: 768px) {
+            .student-account-backdrop {
+                display: block;
+            }
+
             .student-topbar {
-                align-items: stretch;
+                padding: 12px 14px;
+                border-radius: 18px;
                 flex-direction: column;
-                padding: 16px;
+                align-items: stretch;
             }
 
             .student-topbar-left,
@@ -506,19 +563,37 @@
                 width: 100%;
             }
 
-            .student-topbar-left {
-                align-items: flex-start;
+            .student-topbar-title {
+                font-size: 20px;
             }
 
-            .student-topbar-title,
             .student-topbar-subtitle {
-                white-space: normal;
-                overflow: visible;
-                text-overflow: initial;
+                font-size: 12px;
             }
 
             .student-topbar-right {
+                justify-content: stretch;
+            }
+
+            .student-account-trigger {
+                width: 100%;
+                max-width: none;
                 justify-content: space-between;
+            }
+
+            .student-account-menu {
+                position: fixed;
+                left: 12px;
+                right: 12px;
+                top: auto;
+                bottom: 12px;
+                width: auto;
+                border-radius: 22px;
+                transform: translateY(12px);
+            }
+
+            .student-account-menu.open {
+                transform: translateY(0);
             }
         }
 
@@ -528,20 +603,19 @@
             }
 
             .student-sidebar {
-                width: min(88vw, 320px);
+                width: min(86vw, 320px);
             }
 
-            .student-user-chip {
-                width: 100%;
+            .student-topbar-role {
+                font-size: 10px;
             }
 
-            .student-topbar-right {
-                flex-direction: column;
-                align-items: stretch;
+            .student-topbar-subtitle {
+                display: none;
             }
 
-            .logout-btn {
-                width: 100%;
+            .student-account-meta {
+                max-width: calc(100vw - 150px);
             }
         }
     </style>
@@ -550,6 +624,7 @@
 <body>
     <div class="student-shell">
         <div class="student-sidebar-backdrop" data-sidebar-backdrop></div>
+        <div class="student-account-backdrop" data-account-backdrop></div>
 
         <aside class="student-sidebar" data-student-sidebar>
             <div class="student-brand-row">
@@ -588,7 +663,7 @@
                     <span class="student-menu-icon">KQ</span>
                     <span class="student-menu-copy">
                         <span class="student-menu-title">Kết quả điểm danh</span>
-                        <span class="student-menu-subtitle">Tra cứu lịch sử tham gia</span>
+                        <span class="student-menu-subtitle">Lịch sử và tiến độ</span>
                     </span>
                 </a>
 
@@ -601,16 +676,11 @@
                     </span>
                 </a>
             </nav>
-
-            <div class="student-sidebar-foot">
-                <div class="student-sidebar-foot-title">Trải nghiệm gọn và dễ dùng</div>
-                <div class="student-sidebar-foot-text">Bố cục ưu tiên màn hình nhỏ, thao tác rõ ràng và giữ sự nhất quán trên mọi thiết bị.</div>
-            </div>
         </aside>
 
         <main class="student-main">
             <div class="student-main-inner">
-                <div class="student-topbar">
+                <header class="student-topbar">
                     <div class="student-topbar-left">
                         <button type="button" class="student-mobile-toggle" data-sidebar-open aria-label="Mở menu">☰</button>
 
@@ -623,28 +693,51 @@
 
                     <div class="student-topbar-right">
                         @auth
-                        <div class="student-user-chip">
-                            <div class="student-avatar">
+                        <button type="button" class="student-account-trigger" data-account-toggle aria-expanded="false">
+                            <span class="student-avatar">
                                 @if ($layoutAvatarUrl)
                                 <img src="{{ $layoutAvatarUrl }}" alt="Avatar {{ $layoutDisplayName }}">
                                 @else
                                 {{ mb_strtoupper(mb_substr($layoutDisplayName ?? 'S', 0, 1)) }}
                                 @endif
+                            </span>
+
+                            <span class="student-account-meta">
+                                <span class="student-account-name">{{ $layoutDisplayName }}</span>
+                                <span class="student-account-code">{{ $layoutDisplayCode }}</span>
+                            </span>
+
+                            <span class="student-account-chevron">▾</span>
+                        </button>
+
+                        <div class="student-account-menu" data-account-menu>
+                            <div class="student-account-panel">
+                                <span class="student-avatar">
+                                    @if ($layoutAvatarUrl)
+                                    <img src="{{ $layoutAvatarUrl }}" alt="Avatar {{ $layoutDisplayName }}">
+                                    @else
+                                    {{ mb_strtoupper(mb_substr($layoutDisplayName ?? 'S', 0, 1)) }}
+                                    @endif
+                                </span>
+
+                                <div class="student-account-panel-meta">
+                                    <div class="student-account-panel-name">{{ $layoutDisplayName }}</div>
+                                    <div class="student-account-panel-code">{{ $layoutDisplayCode }}</div>
+                                </div>
                             </div>
 
-                            <div class="student-user-meta">
-                                <div class="student-user-name">{{ $layoutDisplayName }}</div>
-                                <div class="student-user-code">{{ $layoutDisplayCode }}</div>
+                            <div class="student-account-section">
+                                <div class="student-account-section-label">Tài khoản</div>
+
+                                <form action="{{ route('logout') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="logout-btn-menu">Đăng xuất</button>
+                                </form>
                             </div>
                         </div>
-
-                        <form action="{{ route('logout') }}" method="POST" style="margin:0;">
-                            @csrf
-                            <button type="submit" class="logout-btn">Đăng xuất</button>
-                        </form>
                         @endauth
                     </div>
-                </div>
+                </header>
 
                 <div class="student-content">
                     @yield('content')
@@ -657,45 +750,104 @@
         document.addEventListener('DOMContentLoaded', function() {
             const body = document.body;
             const sidebar = document.querySelector('[data-student-sidebar]');
-            const backdrop = document.querySelector('[data-sidebar-backdrop]');
-            const openButton = document.querySelector('[data-sidebar-open]');
-            const closeButton = document.querySelector('[data-sidebar-close]');
+            const sidebarBackdrop = document.querySelector('[data-sidebar-backdrop]');
+            const openSidebarButton = document.querySelector('[data-sidebar-open]');
+            const closeSidebarButton = document.querySelector('[data-sidebar-close]');
             const mobileWidth = window.matchMedia('(max-width: 1024px)');
+
+            const accountToggle = document.querySelector('[data-account-toggle]');
+            const accountMenu = document.querySelector('[data-account-menu]');
+            const accountBackdrop = document.querySelector('[data-account-backdrop]');
+            const accountMobileWidth = window.matchMedia('(max-width: 768px)');
 
             function openSidebar() {
                 if (!mobileWidth.matches || !sidebar) return;
                 sidebar.classList.add('open');
-                backdrop?.classList.add('active');
+                sidebarBackdrop?.classList.add('active');
                 body.classList.add('sidebar-open');
             }
 
             function closeSidebar() {
                 sidebar?.classList.remove('open');
-                backdrop?.classList.remove('active');
+                sidebarBackdrop?.classList.remove('active');
                 body.classList.remove('sidebar-open');
             }
 
-            openButton?.addEventListener('click', openSidebar);
-            closeButton?.addEventListener('click', closeSidebar);
-            backdrop?.addEventListener('click', closeSidebar);
+            function openAccountMenu() {
+                if (!accountMenu || !accountToggle) return;
+                accountMenu.classList.add('open');
+                accountToggle.classList.add('active');
+                accountToggle.setAttribute('aria-expanded', 'true');
+                if (accountMobileWidth.matches) {
+                    accountBackdrop?.classList.add('active');
+                    body.classList.add('account-menu-open');
+                }
+            }
+
+            function closeAccountMenu() {
+                if (!accountMenu || !accountToggle) return;
+                accountMenu.classList.remove('open');
+                accountToggle.classList.remove('active');
+                accountToggle.setAttribute('aria-expanded', 'false');
+                accountBackdrop?.classList.remove('active');
+                body.classList.remove('account-menu-open');
+            }
+
+            function toggleAccountMenu() {
+                if (!accountMenu) return;
+                if (accountMenu.classList.contains('open')) {
+                    closeAccountMenu();
+                } else {
+                    openAccountMenu();
+                }
+            }
+
+            openSidebarButton?.addEventListener('click', openSidebar);
+            closeSidebarButton?.addEventListener('click', closeSidebar);
+            sidebarBackdrop?.addEventListener('click', closeSidebar);
 
             document.querySelectorAll('.student-menu-item').forEach((item) => {
                 item.addEventListener('click', function() {
                     if (mobileWidth.matches) {
                         closeSidebar();
                     }
+                    closeAccountMenu();
                 });
+            });
+
+            accountToggle?.addEventListener('click', function(event) {
+                event.stopPropagation();
+                toggleAccountMenu();
+            });
+
+            accountMenu?.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+
+            accountBackdrop?.addEventListener('click', closeAccountMenu);
+
+            document.addEventListener('click', function(event) {
+                if (!accountMenu || !accountToggle) return;
+                if (!accountMenu.contains(event.target) && !accountToggle.contains(event.target)) {
+                    closeAccountMenu();
+                }
             });
 
             window.addEventListener('resize', function() {
                 if (!mobileWidth.matches) {
                     closeSidebar();
                 }
+
+                if (!accountMobileWidth.matches) {
+                    accountBackdrop?.classList.remove('active');
+                    body.classList.remove('account-menu-open');
+                }
             });
 
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape') {
                     closeSidebar();
+                    closeAccountMenu();
                 }
             });
         });

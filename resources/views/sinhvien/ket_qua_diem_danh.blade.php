@@ -1,11 +1,10 @@
 @extends('layouts.student')
 
 @section('student_title', 'Kết quả điểm danh')
-@section('student_subtitle', 'Theo dõi điểm danh và tiến độ CTXH')
+@section('student_subtitle', 'Tiến độ CTXH và lịch sử tham gia')
 
 @section('content')
 @php
-$studentStatus = $student->trangThai ?? 'Chưa cập nhật';
 $requiredScore = 15;
 $currentScore = collect($results)->sum(fn ($item) => (int) ($item['score'] ?? 0));
 $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 100, 100) : 0;
@@ -13,13 +12,13 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
 
 <style>
     .attendance-page {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+        display: grid;
+        gap: 14px;
     }
 
-    .attendance-overview,
-    .attendance-table-wrap,
+    .overview-card,
+    .stats-grid,
+    .history-wrap,
     .attendance-empty {
         background: #fff;
         border: 1px solid var(--border);
@@ -27,39 +26,31 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
         box-shadow: var(--shadow-sm);
     }
 
-    .attendance-overview {
-        padding: 22px;
+    .overview-card {
+        padding: 16px;
     }
 
-    .overview-head {
+    .overview-top {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 18px;
+        gap: 12px;
+        margin-bottom: 14px;
     }
 
     .overview-title {
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 800;
-        letter-spacing: -0.03em;
         color: var(--text);
-        margin-bottom: 6px;
-    }
-
-    .overview-subtitle {
-        font-size: 14px;
-        line-height: 1.6;
-        color: var(--text-soft);
-        max-width: 680px;
+        letter-spacing: -0.03em;
     }
 
     .overview-badge {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 36px;
-        padding: 0 14px;
+        min-height: 34px;
+        padding: 0 12px;
         border-radius: 999px;
         background: var(--primary-soft);
         color: var(--primary);
@@ -68,31 +59,22 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
         white-space: nowrap;
     }
 
-    .progress-panel {
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 18px;
-        background: linear-gradient(180deg, #ffffff, #fbfdff);
-    }
-
-    .progress-meta {
+    .progress-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 12px;
+        gap: 10px;
+        margin-bottom: 10px;
         flex-wrap: wrap;
     }
 
-    .progress-label {
+    .progress-label,
+    .progress-value {
         font-size: 13px;
         font-weight: 700;
-        color: var(--text);
     }
 
     .progress-value {
-        font-size: 13px;
-        font-weight: 800;
         color: var(--text-soft);
     }
 
@@ -117,35 +99,34 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
         line-height: 1.6;
     }
 
-    .attendance-stats {
+    .stats-grid {
+        padding: 12px;
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
     }
 
     .stat-card {
-        background: #fff;
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        box-shadow: var(--shadow-sm);
-        padding: 18px;
+        padding: 14px;
+        border-radius: 16px;
+        background: var(--surface-soft);
+        border: 1px solid rgba(148, 163, 184, 0.12);
         display: flex;
         align-items: center;
-        gap: 14px;
-        min-height: 96px;
+        gap: 12px;
+        min-width: 0;
     }
 
     .stat-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 14px;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         color: #fff;
         font-size: 12px;
         font-weight: 800;
-        letter-spacing: 0.04em;
         flex-shrink: 0;
     }
 
@@ -169,12 +150,8 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
         background: linear-gradient(135deg, #d97706, #f59e0b);
     }
 
-    .stat-copy {
-        min-width: 0;
-    }
-
     .stat-title {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -183,46 +160,39 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
     }
 
     .stat-value {
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 800;
-        line-height: 1.2;
         color: var(--text);
+        line-height: 1.2;
         word-break: break-word;
     }
 
-    .attendance-table-wrap {
+    .history-wrap {
         overflow: hidden;
     }
 
-    .table-header {
-        padding: 20px 22px;
+    .history-head {
+        padding: 16px;
         border-bottom: 1px solid var(--border);
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
-        gap: 14px;
+        gap: 10px;
     }
 
-    .table-title {
+    .history-title {
         font-size: 17px;
         font-weight: 800;
         color: var(--text);
-        margin-bottom: 4px;
     }
 
-    .table-subtitle {
-        font-size: 13px;
-        line-height: 1.6;
-        color: var(--text-soft);
-    }
-
-    .table-counter {
+    .history-counter {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 42px;
-        height: 34px;
-        padding: 0 12px;
+        min-width: 38px;
+        height: 32px;
+        padding: 0 10px;
         border-radius: 999px;
         background: var(--primary-soft);
         color: var(--primary);
@@ -231,18 +201,18 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
         white-space: nowrap;
     }
 
-    .table-scroll {
+    .history-table-wrap {
         overflow-x: auto;
     }
 
-    .attendance-table {
+    .history-table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 780px;
+        min-width: 760px;
     }
 
-    .attendance-table thead th {
-        padding: 14px 16px;
+    .history-table thead th {
+        padding: 13px 14px;
         background: var(--surface-soft);
         border-bottom: 1px solid var(--border);
         text-align: left;
@@ -254,25 +224,20 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
         white-space: nowrap;
     }
 
-    .attendance-table tbody td {
-        padding: 16px;
+    .history-table tbody td {
+        padding: 14px;
         border-bottom: 1px solid var(--border);
         font-size: 14px;
         color: var(--text);
         vertical-align: middle;
     }
 
-    .attendance-table tbody tr:last-child td {
+    .history-table tbody tr:last-child td {
         border-bottom: none;
-    }
-
-    .attendance-table tbody tr:hover {
-        background: #fafcff;
     }
 
     .event-name {
         font-weight: 700;
-        color: var(--text);
         line-height: 1.5;
     }
 
@@ -287,8 +252,8 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 32px;
-        padding: 0 12px;
+        min-height: 30px;
+        padding: 0 11px;
         border-radius: 999px;
         font-size: 12px;
         font-weight: 800;
@@ -314,80 +279,63 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
     }
 
     .attendance-empty {
-        padding: 28px 22px;
+        padding: 24px 18px;
         text-align: center;
         color: var(--text-soft);
         font-size: 14px;
         line-height: 1.7;
     }
 
-    @media (max-width: 1100px) {
-        .attendance-stats {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-
-    @media (max-width: 768px) {
-
-        .overview-head,
-        .table-header {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .attendance-stats {
+    @media (max-width: 640px) {
+        .stats-grid {
             grid-template-columns: 1fr;
         }
 
-        .attendance-overview {
-            padding: 18px;
-        }
-
         .overview-title {
-            font-size: 20px;
+            font-size: 18px;
         }
 
-        .table-scroll {
+        .history-table-wrap {
             overflow: visible;
         }
 
-        .attendance-table,
-        .attendance-table thead,
-        .attendance-table tbody,
-        .attendance-table th,
-        .attendance-table td,
-        .attendance-table tr {
+        .history-table,
+        .history-table thead,
+        .history-table tbody,
+        .history-table th,
+        .history-table td,
+        .history-table tr {
             display: block;
-            min-width: 0;
             width: 100%;
+            min-width: 0;
         }
 
-        .attendance-table thead {
+        .history-table thead {
             display: none;
         }
 
-        .attendance-table tbody {
+        .history-table tbody {
             padding: 10px;
         }
 
-        .attendance-table tbody tr {
+        .history-table tbody tr {
             background: #fff;
             border: 1px solid var(--border);
             border-radius: 16px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             overflow: hidden;
         }
 
-        .attendance-table tbody td {
+        .history-table tbody td {
             border-bottom: 1px solid var(--border);
-            padding: 12px 14px;
+            padding: 11px 12px;
         }
 
-        .attendance-table tbody td:last-child {
+        .history-table tbody td:last-child {
             border-bottom: none;
         }
 
-        .attendance-table tbody td::before {
+        .history-table tbody td::before {
             content: attr(data-label);
             display: block;
             margin-bottom: 4px;
@@ -401,36 +349,31 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
 </style>
 
 <div class="attendance-page">
-    <section class="attendance-overview">
-        <div class="overview-head">
-            <div>
-                <div class="overview-title">Tổng quan điểm danh</div>
-                <div class="overview-subtitle">
-                    Theo dõi tiến độ CTXH và lịch sử điểm danh của bạn trong một giao diện gọn, rõ và dễ dùng trên mọi thiết bị.
-                </div>
-            </div>
+    <section class="overview-card">
+        <div class="overview-top">
+            <div class="overview-title">Tổng quan điểm danh</div>
             <div class="overview-badge">{{ $student->maSV }}</div>
         </div>
 
-        <div class="progress-panel">
-            <div class="progress-meta">
-                <div class="progress-label">Tiến độ hoàn thành CTXH</div>
-                <div class="progress-value">{{ $currentScore }} / {{ $requiredScore }} điểm</div>
-            </div>
-            <div class="progress-track">
-                <div class="progress-bar" style="width: {{ number_format($progressPercent, 2, '.', '') }}%;"></div>
-            </div>
-            <div class="progress-note">
-                {{ $currentScore >= $requiredScore ? 'Bạn đã đạt yêu cầu CTXH.' : 'Bạn chưa đạt mức yêu cầu CTXH hiện tại.' }}
-            </div>
+        <div class="progress-head">
+            <div class="progress-label">Tiến độ CTXH</div>
+            <div class="progress-value">{{ $currentScore }} / {{ $requiredScore }} điểm</div>
+        </div>
+
+        <div class="progress-track">
+            <div class="progress-bar" style="width: {{ number_format($progressPercent, 2, '.', '') }}%;"></div>
+        </div>
+
+        <div class="progress-note">
+            {{ $currentScore >= $requiredScore ? 'Bạn đã đạt yêu cầu CTXH.' : 'Bạn chưa đạt mức yêu cầu CTXH hiện tại.' }}
         </div>
     </section>
 
-    <section class="attendance-stats">
+    <section class="stats-grid">
         @foreach ($stats as $stat)
         <article class="stat-card">
             <div class="stat-icon {{ $stat['class'] }}">{{ $stat['icon'] }}</div>
-            <div class="stat-copy">
+            <div>
                 <div class="stat-title">{{ $stat['title'] }}</div>
                 <div class="stat-value">{{ $stat['value'] }}</div>
             </div>
@@ -438,18 +381,15 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
         @endforeach
     </section>
 
-    <section class="attendance-table-wrap">
-        <div class="table-header">
-            <div>
-                <div class="table-title">Lịch sử điểm danh</div>
-                <div class="table-subtitle">Danh sách các sự kiện đã được hệ thống ghi nhận cho tài khoản của bạn.</div>
-            </div>
-            <div class="table-counter">{{ count($results) }}</div>
+    <section class="history-wrap">
+        <div class="history-head">
+            <div class="history-title">Lịch sử điểm danh</div>
+            <div class="history-counter">{{ count($results) }}</div>
         </div>
 
         @if (!empty($results) && count($results) > 0)
-        <div class="table-scroll">
-            <table class="attendance-table">
+        <div class="history-table-wrap">
+            <table class="history-table">
                 <thead>
                     <tr>
                         <th>Sự kiện</th>
@@ -468,21 +408,15 @@ $progressPercent = $requiredScore > 0 ? min(($currentScore / $requiredScore) * 1
                         </td>
                         <td data-label="Ngày">{{ $result['date'] }}</td>
                         <td data-label="Giờ">{{ $result['time'] }}</td>
-                        <td data-label="Điểm cộng">
-                            <span class="score-chip">{{ $result['score'] }} điểm</span>
-                        </td>
-                        <td data-label="Trạng thái">
-                            <span class="status-chip {{ $result['status_class'] }}">{{ $result['status'] }}</span>
-                        </td>
+                        <td data-label="Điểm cộng"><span class="score-chip">{{ $result['score'] }} điểm</span></td>
+                        <td data-label="Trạng thái"><span class="status-chip {{ $result['status_class'] }}">{{ $result['status'] }}</span></td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
         @else
-        <div class="attendance-empty">
-            Chưa có dữ liệu điểm danh trong hệ thống.
-        </div>
+        <div class="attendance-empty">Chưa có dữ liệu điểm danh trong hệ thống.</div>
         @endif
     </section>
 </div>
