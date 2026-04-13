@@ -1387,6 +1387,7 @@ class CTXHController extends Controller
         }
 
         StudentFace::create([
+            'id' => ((int) StudentFace::max('id')) + 1,
             'maSV' => $student->maSV,
             'rekognition_face_id' => $faceRecord['FaceId'],
             'external_image_id' => $faceRecord['ExternalImageId'] ?? $student->maSV,

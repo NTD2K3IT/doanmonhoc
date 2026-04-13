@@ -9,6 +9,7 @@ class StudentFace extends Model
     protected $table = 'student_faces';
 
     protected $fillable = [
+        'id',
         'maSV',
         'rekognition_face_id',
         'external_image_id',
