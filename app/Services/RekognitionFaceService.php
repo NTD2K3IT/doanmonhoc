@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use App\Models\Student;
 use App\Models\StudentFace;
 use Aws\Rekognition\RekognitionClient;
@@ -31,60 +33,45 @@ class RekognitionFaceService
         $this->collectionId = (string) config('services.rekognition.collection');
     }
 
-    public function syncFromAvatar(Student $student): ?StudentFace
+    private function getAvatarBytes(string $avatar): string
     {
-        if (empty($student->avatar)) {
-            throw new \RuntimeException('Sinh viên chưa có ảnh avatar.');
+        $avatar = trim($avatar);
+
+        if ($avatar === '') {
+            throw new \RuntimeException('Avatar trống.');
         }
 
-        $avatarPath = ltrim((string) $student->avatar, '/');
+        // Nếu là URL Cloudinary
+        if (Str::startsWith($avatar, ['http://', 'https://'])) {
+            $response = Http::timeout(30)->get($avatar);
 
-        if (!Storage::disk('public')->exists($avatarPath)) {
-            throw new \RuntimeException('Không tìm thấy file avatar trong storage.');
+            if (!$response->successful()) {
+                throw new \RuntimeException('Không tải được ảnh avatar từ Cloudinary.');
+            }
+
+            return $response->body();
         }
 
-        $existingFace = StudentFace::where('maSV', $student->maSV)->first();
+        // Nếu là path local cũ
+        $relativePath = ltrim($avatar, '/');
 
-        if ($existingFace && !empty($existingFace->rekognition_face_id)) {
-            try {
-                $this->client->deleteFaces([
-                    'CollectionId' => $this->collectionId,
-                    'FaceIds' => [$existingFace->rekognition_face_id],
-                ]);
-            } catch (\Throwable $e) {
-                // bỏ qua lỗi xóa face cũ trên Rekognition
+        $possiblePaths = [
+            storage_path('app/public/' . $relativePath),
+            public_path('storage/' . $relativePath),
+        ];
+
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path)) {
+                $content = file_get_contents($path);
+
+                if ($content === false) {
+                    throw new \RuntimeException('Không đọc được file avatar trong storage.');
+                }
+
+                return $content;
             }
         }
 
-        $imageBytes = Storage::disk('public')->get($avatarPath);
-
-        $result = $this->client->indexFaces([
-            'CollectionId' => $this->collectionId,
-            'Image' => [
-                'Bytes' => $imageBytes,
-            ],
-            'ExternalImageId' => $student->maSV,
-            'MaxFaces' => 1,
-            'QualityFilter' => 'AUTO',
-            'DetectionAttributes' => [],
-        ])->toArray();
-
-        $faceRecord = $result['FaceRecords'][0]['Face'] ?? null;
-
-        if (!$faceRecord || empty($faceRecord['FaceId'])) {
-            throw new \RuntimeException('Không phát hiện được khuôn mặt hợp lệ từ avatar.');
-        }
-
-        return StudentFace::updateOrCreate(
-            [
-                'maSV' => $student->maSV,
-            ],
-            [
-                'rekognition_face_id' => $faceRecord['FaceId'],
-                'external_image_id' => $faceRecord['ExternalImageId'] ?? $student->maSV,
-                'collection_id' => $this->collectionId,
-                'is_active' => true,
-            ]
-        );
+        throw new \RuntimeException('Không tìm thấy file avatar trong storage.');
     }
 }
