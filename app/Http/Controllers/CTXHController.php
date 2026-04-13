@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use App\Models\HoatDong;
 use App\Models\ActivityLog;
 use App\Models\DiemDanh;
@@ -134,7 +135,17 @@ class CTXHController extends Controller
     {
         $data = $this->validateStudent($request);
 
-        Student::create($data);
+        if ($request->hasFile('avatar')) {
+            $upload = Cloudinary::upload(
+                $request->file('avatar')->getRealPath(),
+                ['folder' => 'avatars']
+            );
+
+            $data['avatar'] = $upload->getSecurePath();
+        }
+
+        $student = Student::create($data);
+
         $this->writeActivityLog(
             'student',
             'create',
@@ -166,7 +177,12 @@ class CTXHController extends Controller
         $data = $this->validateStudent($request, $student);
 
         if ($request->hasFile('avatar')) {
-            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+            $upload = Cloudinary::upload(
+                $request->file('avatar')->getRealPath(),
+                ['folder' => 'avatars']
+            );
+
+            $data['avatar'] = $upload->getSecurePath();
         }
 
         $student->update($data);
@@ -1012,12 +1028,15 @@ class CTXHController extends Controller
         ]);
 
         $avatarChanged = false;
-
         if ($request->hasFile('avatar')) {
-            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+            $upload = Cloudinary::upload(
+                $request->file('avatar')->getRealPath(),
+                ['folder' => 'avatars']
+            );
+
+            $data['avatar'] = $upload->getSecurePath();
             $avatarChanged = true;
         }
-
         $student->update([
             'email' => $data['email'] ?? $student->email,
             'soDienThoai' => $data['soDienThoai'] ?? $student->soDienThoai,
