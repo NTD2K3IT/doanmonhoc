@@ -951,24 +951,40 @@ class CTXHController extends Controller
         }
 
         $today = now()->format('Y-m-d');
+        $now = now();
 
-        $attendance = DiemDanh::updateOrCreate(
-            [
+        $existingAttendance = DB::table('diemdanh')
+            ->where('maSV', $student->maSV)
+            ->where('maHoatDong', $event->maHoatDong)
+            ->whereDate('ngayDiemDanh', $today)
+            ->first();
+
+        if ($existingAttendance) {
+            DB::table('diemdanh')
+                ->where('maSV', $student->maSV)
+                ->where('maHoatDong', $event->maHoatDong)
+                ->whereDate('ngayDiemDanh', $today)
+                ->update([
+                    'thoiGianDiemDanh' => $now,
+                    'trangThai' => 'present',
+                ]);
+
+            $message = 'Bạn đã điểm danh trước đó. Hệ thống đã cập nhật lại thời gian quét.';
+        } else {
+            DB::table('diemdanh')->insert([
                 'maSV' => $student->maSV,
                 'maHoatDong' => $event->maHoatDong,
                 'ngayDiemDanh' => $today,
-            ],
-            [
-                'thoiGianDiemDanh' => now(),
+                'thoiGianDiemDanh' => $now,
                 'trangThai' => 'present',
-            ]
-        );
+            ]);
+
+            $message = "Điểm danh thành công cho sự kiện: {$event->tenHoatDong}.";
+        }
 
         return response()->json([
             'success' => true,
-            'message' => $attendance->wasRecentlyCreated
-                ? "Điểm danh thành công cho sự kiện: {$event->tenHoatDong}."
-                : 'Bạn đã điểm danh trước đó. Hệ thống đã cập nhật lại thời gian quét.',
+            'message' => $message,
             'attendance' => [
                 'event_name' => $event->tenHoatDong,
                 'date' => now()->format('d/m/Y'),
