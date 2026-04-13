@@ -1028,14 +1028,24 @@ class CTXHController extends Controller
         ]);
 
         $avatarChanged = false;
-        if ($request->hasFile('avatar')) {
-            $upload = Cloudinary::upload(
-                $request->file('avatar')->getRealPath(),
-                ['folder' => 'avatars']
-            );
 
-            $data['avatar'] = $upload->getSecurePath();
-            $avatarChanged = true;
+        if ($request->hasFile('avatar')) {
+            try {
+                $upload = Cloudinary::upload(
+                    $request->file('avatar')->getRealPath(),
+                    ['folder' => 'avatars']
+                );
+
+                $data['avatar'] = $upload->getSecurePath();
+                $avatarChanged = true;
+            } catch (\Throwable $e) {
+                return redirect()
+                    ->route('sinhvien.dashboard_sinhvien')
+                    ->withErrors([
+                        'avatar' => 'Upload ảnh lên Cloudinary thất bại: ' . $e->getMessage(),
+                    ], 'profile')
+                    ->withInput();
+            }
         }
         $student->update([
             'email' => $data['email'] ?? $student->email,
