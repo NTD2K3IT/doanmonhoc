@@ -75,23 +75,34 @@
         position: relative;
         overflow: hidden;
         border-radius: 16px;
+        isolation: isolate;
     }
 
     #student-qr-reader video {
         width: 100% !important;
         height: 100% !important;
-        max-height: 320px;
+        max-height: 320px !important;
         object-fit: cover;
         border-radius: 16px;
         background: #000;
+        display: block !important;
+        position: static !important;
+        pointer-events: none;
     }
 
     #student-qr-reader__scan_region {
         min-height: 240px;
+        overflow: hidden;
+        border-radius: 16px;
     }
 
+    #student-qr-reader__scan_region img,
     #student-qr-reader img {
         max-width: 100%;
+    }
+
+    #student-qr-reader__dashboard {
+        display: none !important;
     }
 
     .scan-placeholder {
@@ -263,7 +274,7 @@
         }
 
         #student-qr-reader video {
-            max-height: 260px;
+            max-height: 260px !important;
         }
 
         #student-qr-reader__scan_region {
@@ -536,12 +547,12 @@
                 throw new Error('Trình duyệt không hỗ trợ camera.');
             }
 
-            const tempStream = await navigator.mediaDevices.getUserMedia({
+            const stream = await navigator.mediaDevices.getUserMedia({
                 video: true,
                 audio: false,
             });
 
-            tempStream.getTracks().forEach(track => track.stop());
+            stream.getTracks().forEach((track) => track.stop());
         }
 
         function isMobileDevice() {
@@ -556,8 +567,7 @@
             }
 
             const rearRegex = /back|rear|environment|wide|ultra|traseira|trasera|hậu|sau/i;
-
-            const rearCamera = cameras.find(camera => rearRegex.test(camera.label || ''));
+            const rearCamera = cameras.find((camera) => rearRegex.test(camera.label || ''));
 
             if (rearCamera?.id) {
                 return rearCamera.id;
@@ -579,9 +589,14 @@
             video.setAttribute('webkit-playsinline', 'true');
             video.setAttribute('muted', 'true');
             video.setAttribute('autoplay', 'true');
+            video.setAttribute('controls', 'false');
+            video.setAttribute('disablePictureInPicture', 'true');
+
             video.playsInline = true;
             video.muted = true;
             video.autoplay = true;
+            video.controls = false;
+            video.disablePictureInPicture = true;
 
             video.play?.().catch(() => {});
 
@@ -594,7 +609,7 @@
                     break;
                 }
 
-                await new Promise(resolve => setTimeout(resolve, 120));
+                await new Promise((resolve) => setTimeout(resolve, 120));
             }
         }
 
@@ -651,7 +666,7 @@
                 activeCameraId = null;
 
                 showResult(
-                    'Không thể mở camera sau. Nếu bạn đang mở trong trình duyệt bên trong ứng dụng, hãy mở bằng Safari hoặc Chrome.',
+                    'Không thể mở camera sau trong khung quét. Hãy thử mở bằng Safari hoặc Chrome.',
                     'error'
                 );
             }
