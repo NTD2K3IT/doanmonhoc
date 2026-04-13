@@ -1,19 +1,12 @@
 @extends('layouts.student')
 
-@section('student_title', 'Hồ sơ sinh viên')
-@section('student_subtitle', 'Thông tin cá nhân, mã QR và thiết lập tài khoản')
+@section('student_title', 'Thông tin sinh viên')
+@section('student_subtitle', 'Quản lý hồ sơ cá nhân và bảo mật tài khoản trên mọi thiết bị')
 
 @section('content')
 @php
 $status = $student->trangThai ?? 'Chưa cập nhật';
 $isActive = in_array(mb_strtolower((string) $status), ['active', 'đang học', 'hoạt động', '1']);
-
-$qrPayload = json_encode([
-'maSV' => $student->maSV,
-'hoTen' => $student->hoTen,
-'maLop' => $student->maLop,
-'email' => $student->email,
-], JSON_UNESCAPED_UNICODE);
 
 $avatarUrl = null;
 
@@ -45,6 +38,7 @@ $openModal = 'password';
         align-items: flex-start;
         gap: 20px;
         margin-bottom: 20px;
+        flex-wrap: wrap;
     }
 
     .student-hero-title {
@@ -89,88 +83,12 @@ $openModal = 'password';
         color: #15803d;
     }
 
-    .student-dashboard-grid {
-        display: grid;
-        grid-template-columns: 360px 1fr;
-        gap: 20px;
-    }
-
-    .qr-card,
     .profile-card {
         background: #fff;
         border: 1px solid var(--border);
         border-radius: 24px;
         box-shadow: var(--shadow-sm);
-    }
-
-    .qr-card {
         padding: 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-    }
-
-    .profile-card {
-        padding: 24px;
-    }
-
-    .qr-title,
-    .section-title {
-        font-size: 20px;
-        font-weight: 800;
-        color: var(--text);
-        margin-bottom: 6px;
-    }
-
-    .qr-subtitle,
-    .section-subtitle-soft {
-        color: var(--text-soft);
-        font-size: 13px;
-        line-height: 1.6;
-    }
-
-    .qr-box {
-        min-height: 260px;
-        border: 1px dashed var(--border-strong);
-        border-radius: 20px;
-        background: var(--surface-soft);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .student-actions {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-    }
-
-    .secondary-btn {
-        appearance: none;
-        border: 1px solid var(--border);
-        background: #fff;
-        color: var(--text);
-        border-radius: 14px;
-        padding: 12px 16px;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: 0.2s ease;
-    }
-
-    .secondary-btn:hover {
-        border-color: #cbd5e1;
-        transform: translateY(-1px);
-    }
-
-    .student-footer-note {
-        padding: 14px 16px;
-        border-radius: 16px;
-        background: var(--surface-soft);
-        color: var(--text-soft);
-        font-size: 13px;
-        line-height: 1.6;
     }
 
     .profile-top {
@@ -186,19 +104,20 @@ $openModal = 'password';
         display: flex;
         align-items: center;
         gap: 16px;
+        min-width: 0;
     }
 
     .profile-avatar {
-        width: 64px;
-        height: 64px;
-        border-radius: 20px;
+        width: 72px;
+        height: 72px;
+        border-radius: 22px;
         overflow: hidden;
         background: linear-gradient(135deg, var(--primary), #2563eb);
         color: #fff;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
+        font-size: 24px;
         font-weight: 800;
         box-shadow: 0 14px 28px rgba(29, 78, 216, 0.18);
         flex-shrink: 0;
@@ -216,6 +135,7 @@ $openModal = 'password';
         font-weight: 800;
         color: var(--text);
         margin-bottom: 4px;
+        word-break: break-word;
     }
 
     .profile-code {
@@ -231,22 +151,36 @@ $openModal = 'password';
         justify-content: flex-end;
     }
 
-    .tool-btn {
+    .tool-btn,
+    .primary-btn,
+    .ghost-btn {
         appearance: none;
-        border: 1px solid var(--border);
-        background: #fff;
-        color: var(--text);
         border-radius: 14px;
-        padding: 10px 14px;
-        font-size: 13px;
-        font-weight: 800;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-weight: 700;
         cursor: pointer;
         transition: 0.2s ease;
     }
 
-    .tool-btn:hover {
+    .tool-btn,
+    .ghost-btn {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+    }
+
+    .primary-btn {
+        border: none;
+        color: #fff;
+        background: linear-gradient(135deg, var(--primary), #2563eb);
+        box-shadow: 0 12px 24px rgba(29, 78, 216, 0.16);
+    }
+
+    .tool-btn:hover,
+    .ghost-btn:hover,
+    .primary-btn:hover {
         transform: translateY(-1px);
-        border-color: #cbd5e1;
     }
 
     .status-badge {
@@ -302,6 +236,56 @@ $openModal = 'password';
         word-break: break-word;
     }
 
+    .quick-links {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+    }
+
+    .quick-link-card {
+        padding: 18px;
+        background: linear-gradient(180deg, #fff, #f8fbff);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        transition: 0.2s ease;
+    }
+
+    .quick-link-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .quick-link-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 4px;
+    }
+
+    .quick-link-text {
+        font-size: 13px;
+        color: var(--text-soft);
+        line-height: 1.6;
+    }
+
+    .quick-link-arrow {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
     .modal-overlay {
         position: fixed;
         inset: 0;
@@ -350,6 +334,19 @@ $openModal = 'password';
         color: #2563eb;
     }
 
+    .section-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 6px;
+    }
+
+    .section-subtitle-soft {
+        color: var(--text-soft);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
     .close-btn {
         appearance: none;
         border: 1px solid var(--border);
@@ -370,12 +367,6 @@ $openModal = 'password';
         margin-bottom: 16px;
         font-size: 14px;
         line-height: 1.6;
-    }
-
-    .alert-success {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        color: #15803d;
     }
 
     .alert-error {
@@ -452,27 +443,8 @@ $openModal = 'password';
         flex-wrap: wrap;
     }
 
-    .ghost-btn {
-        appearance: none;
-        border: 1px solid var(--border);
-        background: var(--surface-soft);
-        color: var(--text);
-        border-radius: 14px;
-        padding: 12px 16px;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-    }
-
-    @media (max-width: 1100px) {
-        .student-dashboard-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
     @media (max-width: 900px) {
 
-        .student-hero,
         .profile-top,
         .modal-head {
             flex-direction: column;
@@ -480,6 +452,7 @@ $openModal = 'password';
         }
 
         .profile-grid,
+        .quick-links,
         .form-grid {
             grid-template-columns: 1fr;
         }
@@ -496,13 +469,39 @@ $openModal = 'password';
             max-height: calc(100vh - 24px);
         }
     }
+
+    @media (max-width: 640px) {
+        .student-hero-title {
+            font-size: 24px;
+        }
+
+        .profile-card {
+            padding: 18px;
+        }
+
+        .profile-header {
+            align-items: flex-start;
+        }
+
+        .tool-btn,
+        .primary-btn,
+        .ghost-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .profile-tools,
+        .form-actions {
+            width: 100%;
+        }
+    }
 </style>
 
 <div class="student-hero">
     <div>
-        <div class="student-hero-title">Tài khoản sinh viên</div>
+        <div class="student-hero-title">Thông tin sinh viên</div>
         <div class="student-hero-subtitle">
-            Quản lý hồ sơ cá nhân, mã QR phục vụ điểm danh và thiết lập bảo mật tài khoản trong một giao diện gọn gàng hơn.
+            Trang này chỉ tập trung vào hồ sơ cá nhân và bảo mật tài khoản để bố cục gọn hơn, dễ đọc hơn trên laptop, tablet và điện thoại.
         </div>
     </div>
 
@@ -523,106 +522,100 @@ $openModal = 'password';
 </div>
 @endif
 
-<div class="student-dashboard-grid">
-    <div class="qr-card">
-        <div>
-            <div class="qr-title">Mã QR sinh viên</div>
-            <div class="qr-subtitle">Sử dụng để xác thực và hỗ trợ điểm danh trong hệ thống</div>
+<div class="profile-card">
+    <div class="profile-top">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                @if ($avatarUrl)
+                <img src="{{ $avatarUrl }}" alt="Avatar {{ $student->hoTen }}">
+                @else
+                {{ mb_strtoupper(mb_substr($student->hoTen ?? 'S', 0, 1)) }}
+                @endif
+            </div>
+
+            <div>
+                <div class="profile-name">{{ $student->hoTen }}</div>
+                <div class="profile-code">MSSV: {{ $student->maSV }}</div>
+            </div>
         </div>
 
-        <div class="qr-box">
-            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(220)->margin(1)->generate($qrPayload) !!}
-        </div>
+        <div class="profile-tools">
+            <span class="status-badge {{ $isActive ? 'active' : 'inactive' }}">
+                {{ $status }}
+            </span>
 
-        <div class="student-actions">
-            <button type="button" class="primary-btn" onclick="window.print()">In QR</button>
-        </div>
+            <button type="button" class="tool-btn" data-open-modal="profile-modal">
+                Chỉnh sửa thông tin
+            </button>
 
-        <div class="student-footer-note">
-            Mã QR chứa thông tin cơ bản của sinh viên để phục vụ xác thực trong hệ thống.
+            <button type="button" class="tool-btn" data-open-modal="password-modal">
+                Đổi mật khẩu
+            </button>
         </div>
     </div>
 
-    <div class="profile-card">
-        <div class="profile-top">
-            <div class="profile-header">
-                <div class="profile-avatar">
-                    @if ($avatarUrl)
-                    <img src="{{ $avatarUrl }}" alt="Avatar {{ $student->hoTen }}">
-                    @else
-                    {{ mb_strtoupper(mb_substr($student->hoTen ?? 'S', 0, 1)) }}
-                    @endif
-                </div>
-
-                <div>
-                    <div class="profile-name">{{ $student->hoTen }}</div>
-                    <div class="profile-code">MSSV: {{ $student->maSV }}</div>
-                </div>
-            </div>
-
-            <div class="profile-tools">
-                <span class="status-badge {{ $isActive ? 'active' : 'inactive' }}">
-                    {{ $status }}
-                </span>
-
-                <button type="button" class="tool-btn" data-open-modal="profile-modal">
-                    Chỉnh sửa thông tin
-                </button>
-
-                <button type="button" class="tool-btn" data-open-modal="password-modal">
-                    Đổi mật khẩu
-                </button>
-            </div>
+    <div class="profile-grid">
+        <div class="mini-card">
+            <div class="mini-label">Email</div>
+            <div class="mini-value">{{ $student->email ?? 'Chưa có' }}</div>
         </div>
 
-        <div class="profile-grid">
-            <div class="mini-card">
-                <div class="mini-label">Email</div>
-                <div class="mini-value">{{ $student->email ?? 'Chưa có' }}</div>
-            </div>
-
-            <div class="mini-card">
-                <div class="mini-label">Lớp</div>
-                <div class="mini-value">{{ $student->maLop ?? 'Chưa có' }}</div>
-            </div>
-
-            <div class="mini-card">
-                <div class="mini-label">Giới tính</div>
-                <div class="mini-value">{{ $student->gioiTinh ?? 'Chưa có' }}</div>
-            </div>
-
-            <div class="mini-card">
-                <div class="mini-label">Ngày sinh</div>
-                <div class="mini-value">{{ optional($student->ngaySinh)->format('d/m/Y') ?? 'Chưa có' }}</div>
-            </div>
-
-            <div class="mini-card">
-                <div class="mini-label">Số điện thoại</div>
-                <div class="mini-value">{{ $student->soDienThoai ?? 'Chưa có' }}</div>
-            </div>
-
-            <div class="mini-card">
-                <div class="mini-label">CCCD</div>
-                <div class="mini-value">{{ $student->cccd ?? 'Chưa có' }}</div>
-            </div>
-
-            <div class="mini-card">
-                <div class="mini-label">Ngày nhập học</div>
-                <div class="mini-value">{{ optional($student->ngayNhapHoc)->format('d/m/Y') ?? 'Chưa có' }}</div>
-            </div>
-
-            <div class="mini-card">
-                <div class="mini-label">Địa chỉ</div>
-                <div class="mini-value">{{ $student->diaChi ?? 'Chưa có' }}</div>
-            </div>
+        <div class="mini-card">
+            <div class="mini-label">Lớp</div>
+            <div class="mini-value">{{ $student->maLop ?? 'Chưa có' }}</div>
         </div>
+
+        <div class="mini-card">
+            <div class="mini-label">Giới tính</div>
+            <div class="mini-value">{{ $student->gioiTinh ?? 'Chưa có' }}</div>
+        </div>
+
+        <div class="mini-card">
+            <div class="mini-label">Ngày sinh</div>
+            <div class="mini-value">{{ optional($student->ngaySinh)->format('d/m/Y') ?? 'Chưa có' }}</div>
+        </div>
+
+        <div class="mini-card">
+            <div class="mini-label">Số điện thoại</div>
+            <div class="mini-value">{{ $student->soDienThoai ?? 'Chưa có' }}</div>
+        </div>
+
+        <div class="mini-card">
+            <div class="mini-label">CCCD</div>
+            <div class="mini-value">{{ $student->cccd ?? 'Chưa có' }}</div>
+        </div>
+
+        <div class="mini-card">
+            <div class="mini-label">Ngày nhập học</div>
+            <div class="mini-value">{{ optional($student->ngayNhapHoc)->format('d/m/Y') ?? 'Chưa có' }}</div>
+        </div>
+
+        <div class="mini-card">
+            <div class="mini-label">Địa chỉ</div>
+            <div class="mini-value">{{ $student->diaChi ?? 'Chưa có' }}</div>
+        </div>
+    </div>
+
+    <div class="quick-links">
+        <a href="{{ route('sinhvien.qr') }}" class="quick-link-card">
+            <div>
+                <div class="quick-link-title">Mở trang mã QR</div>
+                <div class="quick-link-text">Tách riêng khu vực QR để in và quét dễ hơn mà không làm trang hồ sơ bị dài.</div>
+            </div>
+            <span class="quick-link-arrow">→</span>
+        </a>
+
+        <a href="{{ route('sinhvien.scan_qr') }}" class="quick-link-card">
+            <div>
+                <div class="quick-link-title">Quét mã điểm danh</div>
+                <div class="quick-link-text">Đi tới màn hình quét mã sự kiện với bố cục tập trung hơn trên điện thoại.</div>
+            </div>
+            <span class="quick-link-arrow">→</span>
+        </a>
     </div>
 </div>
 
-<div
-    id="profile-modal"
-    class="modal-overlay {{ $openModal === 'profile' ? 'open' : '' }}"
-    data-modal>
+<div id="profile-modal" class="modal-overlay {{ $openModal === 'profile' ? 'open' : '' }}" data-modal>
     <div class="modal-card">
         <div class="modal-head">
             <div>
@@ -723,10 +716,7 @@ $openModal = 'password';
     </div>
 </div>
 
-<div
-    id="password-modal"
-    class="modal-overlay {{ $openModal === 'password' ? 'open' : '' }}"
-    data-modal>
+<div id="password-modal" class="modal-overlay {{ $openModal === 'password' ? 'open' : '' }}" data-modal>
     <div class="modal-card">
         <div class="modal-head">
             <div>

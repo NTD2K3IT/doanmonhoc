@@ -52,17 +52,25 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 Route::middleware(['auth', 'role:sinhvien'])->group(function () {
-    Route::get('/sinhvien/dashboard_sinhvien', [CTXHController::class, 'studentDashboard'])
-        ->name('sinhvien.dashboard_sinhvien');
+    Route::get('/sinhvien/dashboard_sinhvien', function () {
+        return redirect()->route('sinhvien.profile');
+    })->name('sinhvien.dashboard_sinhvien');
+
+    Route::get('/sinhvien/thong-tin', [CTXHController::class, 'studentProfile'])
+        ->name('sinhvien.profile');
+
+    Route::get('/sinhvien/ma-qr', [CTXHController::class, 'studentQrCode'])
+        ->name('sinhvien.qr');
+
     Route::put('/sinhvien/ho-so', [CTXHController::class, 'updateStudentProfile'])
         ->name('sinhvien.profile.update');
+
     Route::put('/sinhvien/doi-mat-khau', [CTXHController::class, 'updateStudentPassword'])
         ->name('sinhvien.password.update');
 
-
-
     Route::get('/sinhvien/ket-qua-diem-danh', [CTXHController::class, 'studentAttendanceResult'])
         ->name('sinhvien.attendance_result');
+
     Route::get('/sinhvien/quet-ma-diem-danh', [CTXHController::class, 'studentScanQrPage'])
         ->name('sinhvien.scan_qr');
 

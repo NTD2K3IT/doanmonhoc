@@ -102,6 +102,7 @@ class CTXHController extends Controller
 
         return view('ctxh.dashboard', compact('stats', 'recentStudents', 'events'));
     }
+
     public function students(Request $request): View
     {
         $keyword = trim((string) $request->get('keyword', ''));
@@ -687,6 +688,37 @@ class CTXHController extends Controller
 
         return view('sinhvien.dashboard_sinhvien', compact('student'));
     }
+
+    public function studentProfile(): View
+    {
+        $student = $this->currentStudent();
+
+        return view('sinhvien.dashboard_sinhvien', compact('student'));
+    }
+
+    public function studentQrCode(): View
+    {
+        $student = $this->currentStudent();
+
+        return view('sinhvien.student_qr', compact('student'));
+    }
+
+    private function currentStudent(): Student
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            abort(401, 'Phiên đăng nhập không hợp lệ.');
+        }
+
+        $student = Student::where('maSV', $user->username)->first();
+
+        if (!$student) {
+            abort(404, 'Không tìm thấy hồ sơ sinh viên tương ứng với tài khoản đăng nhập.');
+        }
+
+        return $student;
+    }
     private function writeActivityLog(
         string $entityType,
         string $action,
@@ -1040,7 +1072,7 @@ class CTXHController extends Controller
                 $avatarChanged = true;
             } catch (\Throwable $e) {
                 return redirect()
-                    ->route('sinhvien.dashboard_sinhvien')
+                    ->route('sinhvien.profile')
                     ->withErrors([
                         'avatar' => 'Upload ảnh lên Cloudinary thất bại: ' . $e->getMessage(),
                     ], 'profile')
@@ -1059,13 +1091,13 @@ class CTXHController extends Controller
                 $faceService->syncFromAvatar($student->fresh());
             } catch (\Throwable $e) {
                 return redirect()
-                    ->route('sinhvien.dashboard_sinhvien')
+                    ->route('sinhvien.profile')
                     ->with('success_profile', 'Cập nhật hồ sơ thành công nhưng không đồng bộ được khuôn mặt: ' . $e->getMessage());
             }
         }
 
         return redirect()
-            ->route('sinhvien.dashboard_sinhvien')
+            ->route('sinhvien.profile')
             ->with('success_profile', 'Cập nhật thông tin cá nhân thành công.');
     }
 
@@ -1100,7 +1132,7 @@ class CTXHController extends Controller
         $user->save();
 
         return redirect()
-            ->route('sinhvien.dashboard_sinhvien')
+            ->route('sinhvien.profile')
             ->with('success_password', 'Đổi mật khẩu thành công.');
     }
     public function faceAttendance(Request $request): View
