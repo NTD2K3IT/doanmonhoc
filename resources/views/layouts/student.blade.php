@@ -49,12 +49,9 @@
             --primary: #1d4ed8;
             --primary-soft: #eff6ff;
             --danger: #dc2626;
-            --danger-soft: #fee2e2;
             --shadow-sm: 0 2px 10px rgba(15, 23, 42, 0.05);
             --shadow-md: 0 14px 34px rgba(15, 23, 42, 0.08);
             --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.16);
-            --radius-md: 18px;
-            --radius-lg: 24px;
             --sidebar-width: 276px;
             --content-max: 1400px;
         }
@@ -80,8 +77,7 @@
             line-height: 1.5;
         }
 
-        body.sidebar-open,
-        body.account-menu-open {
+        body.sidebar-open {
             overflow: hidden;
         }
 
@@ -101,27 +97,17 @@
             min-height: 100vh;
         }
 
-        .student-sidebar-backdrop,
-        .student-account-backdrop {
+        .student-sidebar-backdrop {
             position: fixed;
             inset: 0;
             background: rgba(15, 23, 42, 0.48);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s ease;
-        }
-
-        .student-sidebar-backdrop {
             z-index: 69;
         }
 
-        .student-account-backdrop {
-            z-index: 74;
-            display: none;
-        }
-
-        .student-sidebar-backdrop.active,
-        .student-account-backdrop.active {
+        .student-sidebar-backdrop.active {
             opacity: 1;
             pointer-events: auto;
         }
@@ -287,6 +273,67 @@
             text-overflow: ellipsis;
         }
 
+        .student-sidebar-account {
+            margin-top: auto;
+            padding: 14px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            border: 1px solid rgba(226, 232, 240, 0.92);
+            box-shadow: var(--shadow-sm);
+            display: grid;
+            gap: 12px;
+        }
+
+        .student-sidebar-account-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .student-sidebar-account-meta {
+            min-width: 0;
+            display: grid;
+            gap: 2px;
+        }
+
+        .student-sidebar-account-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .student-sidebar-account-code {
+            font-size: 12px;
+            color: var(--text-soft);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .logout-btn-sidebar {
+            width: 100%;
+            min-height: 44px;
+            appearance: none;
+            border: 1px solid rgba(220, 38, 38, 0.14);
+            background: #fff;
+            color: var(--danger);
+            border-radius: 14px;
+            padding: 0 14px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s ease;
+        }
+
+        .logout-btn-sidebar:hover {
+            background: #fff7f7;
+            border-color: rgba(220, 38, 38, 0.22);
+        }
+
         .student-main {
             margin-left: var(--sidebar-width);
             padding: 24px;
@@ -298,36 +345,35 @@
         }
 
         .student-topbar {
-            margin-bottom: 20px;
-            padding: 14px 18px;
+            min-height: 72px;
+            margin-bottom: 18px;
+            padding: 14px 16px;
             border-radius: 20px;
-            border: 1px solid rgba(226, 232, 240, 0.95);
+            border: 1px solid rgba(226, 232, 240, 0.94);
             background: rgba(255, 255, 255, 0.88);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
             box-shadow: var(--shadow-md);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
+            gap: 12px;
         }
 
         .student-topbar-left {
-            min-width: 0;
-            flex: 1;
             display: flex;
             align-items: center;
             gap: 14px;
+            min-width: 0;
+            flex: 1;
         }
 
         .student-topbar-copy {
             min-width: 0;
             display: grid;
-            gap: 3px;
+            gap: 4px;
         }
 
         .student-topbar-role {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.08em;
@@ -335,7 +381,7 @@
         }
 
         .student-topbar-title {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 800;
             letter-spacing: -0.03em;
             line-height: 1.15;
@@ -359,9 +405,9 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            min-height: 48px;
-            padding: 6px 12px 6px 6px;
-            border-radius: 16px;
+            min-height: 44px;
+            padding: 4px 10px 4px 4px;
+            border-radius: 14px;
             border: 1px solid rgba(226, 232, 240, 0.95);
             background: #fff;
             cursor: pointer;
@@ -547,53 +593,38 @@
         }
 
         @media (max-width: 768px) {
-            .student-account-backdrop {
-                display: block;
-            }
-
             .student-topbar {
-                padding: 12px 14px;
-                border-radius: 18px;
-                flex-direction: column;
-                align-items: stretch;
+                padding: 10px 12px;
+                border-radius: 16px;
+                display: grid;
+                grid-template-columns: 42px 1fr;
+                align-items: center;
+                gap: 10px;
             }
 
-            .student-topbar-left,
-            .student-topbar-right {
-                width: 100%;
-            }
-
-            .student-topbar-title {
-                font-size: 20px;
-            }
-
-            .student-topbar-subtitle {
-                font-size: 12px;
+            .student-topbar-copy {
+                display: none;
             }
 
             .student-topbar-right {
-                justify-content: stretch;
+                justify-content: flex-end;
             }
 
             .student-account-trigger {
-                width: 100%;
-                max-width: none;
-                justify-content: space-between;
+                padding: 0;
+                width: 36px;
+                height: 36px;
+                min-height: 36px;
+                border: none;
+                background: transparent;
+                box-shadow: none;
+                pointer-events: none;
             }
 
+            .student-account-meta,
+            .student-account-chevron,
             .student-account-menu {
-                position: fixed;
-                left: 12px;
-                right: 12px;
-                top: auto;
-                bottom: 12px;
-                width: auto;
-                border-radius: 22px;
-                transform: translateY(12px);
-            }
-
-            .student-account-menu.open {
-                transform: translateY(0);
+                display: none !important;
             }
         }
 
@@ -605,18 +636,6 @@
             .student-sidebar {
                 width: min(86vw, 320px);
             }
-
-            .student-topbar-role {
-                font-size: 10px;
-            }
-
-            .student-topbar-subtitle {
-                display: none;
-            }
-
-            .student-account-meta {
-                max-width: calc(100vw - 150px);
-            }
         }
     </style>
 </head>
@@ -624,7 +643,6 @@
 <body>
     <div class="student-shell">
         <div class="student-sidebar-backdrop" data-sidebar-backdrop></div>
-        <div class="student-account-backdrop" data-account-backdrop></div>
 
         <aside class="student-sidebar" data-student-sidebar>
             <div class="student-brand-row">
@@ -676,6 +694,30 @@
                     </span>
                 </a>
             </nav>
+
+            @auth
+            <div class="student-sidebar-account">
+                <div class="student-sidebar-account-head">
+                    <span class="student-avatar">
+                        @if ($layoutAvatarUrl)
+                        <img src="{{ $layoutAvatarUrl }}" alt="Avatar {{ $layoutDisplayName }}">
+                        @else
+                        {{ mb_strtoupper(mb_substr($layoutDisplayName ?? 'S', 0, 1)) }}
+                        @endif
+                    </span>
+
+                    <div class="student-sidebar-account-meta">
+                        <div class="student-sidebar-account-name">{{ $layoutDisplayName }}</div>
+                        <div class="student-sidebar-account-code">{{ $layoutDisplayCode }}</div>
+                    </div>
+                </div>
+
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="logout-btn-sidebar">Đăng xuất</button>
+                </form>
+            </div>
+            @endauth
         </aside>
 
         <main class="student-main">
@@ -757,8 +799,7 @@
 
             const accountToggle = document.querySelector('[data-account-toggle]');
             const accountMenu = document.querySelector('[data-account-menu]');
-            const accountBackdrop = document.querySelector('[data-account-backdrop]');
-            const accountMobileWidth = window.matchMedia('(max-width: 768px)');
+            const accountDesktopWidth = window.matchMedia('(min-width: 769px)');
 
             function openSidebar() {
                 if (!mobileWidth.matches || !sidebar) return;
@@ -774,14 +815,10 @@
             }
 
             function openAccountMenu() {
-                if (!accountMenu || !accountToggle) return;
+                if (!accountMenu || !accountToggle || !accountDesktopWidth.matches) return;
                 accountMenu.classList.add('open');
                 accountToggle.classList.add('active');
                 accountToggle.setAttribute('aria-expanded', 'true');
-                if (accountMobileWidth.matches) {
-                    accountBackdrop?.classList.add('active');
-                    body.classList.add('account-menu-open');
-                }
             }
 
             function closeAccountMenu() {
@@ -789,13 +826,11 @@
                 accountMenu.classList.remove('open');
                 accountToggle.classList.remove('active');
                 accountToggle.setAttribute('aria-expanded', 'false');
-                accountBackdrop?.classList.remove('active');
-                body.classList.remove('account-menu-open');
             }
 
             function toggleAccountMenu() {
-                if (!accountMenu) return;
-                if (accountMenu.classList.contains('open')) {
+                if (!accountDesktopWidth.matches) return;
+                if (accountMenu?.classList.contains('open')) {
                     closeAccountMenu();
                 } else {
                     openAccountMenu();
@@ -824,8 +859,6 @@
                 event.stopPropagation();
             });
 
-            accountBackdrop?.addEventListener('click', closeAccountMenu);
-
             document.addEventListener('click', function(event) {
                 if (!accountMenu || !accountToggle) return;
                 if (!accountMenu.contains(event.target) && !accountToggle.contains(event.target)) {
@@ -838,9 +871,8 @@
                     closeSidebar();
                 }
 
-                if (!accountMobileWidth.matches) {
-                    accountBackdrop?.classList.remove('active');
-                    body.classList.remove('account-menu-open');
+                if (!accountDesktopWidth.matches) {
+                    closeAccountMenu();
                 }
             });
 
