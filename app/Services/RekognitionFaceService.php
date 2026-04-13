@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 use App\Models\Student;
 use App\Models\StudentFace;
 use Aws\Rekognition\RekognitionClient;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class RekognitionFaceService
 {
@@ -31,6 +30,74 @@ class RekognitionFaceService
 
         $this->client = new RekognitionClient($clientConfig);
         $this->collectionId = (string) config('services.rekognition.collection');
+
+        if ($this->collectionId === '') {
+            throw new \RuntimeException('Thiếu cấu hình services.rekognition.collection');
+        }
+    }
+
+    public function syncFromAvatar(Student $student): void
+    {
+        if (empty($student->maSV)) {
+            throw new \RuntimeException('Sinh viên không có mã sinh viên.');
+        }
+
+        if (empty($student->avatar)) {
+            throw new \RuntimeException('Sinh viên chưa có avatar.');
+        }
+
+        $imageBytes = $this->getAvatarBytes((string) $student->avatar);
+
+        $existingFaces = StudentFace::where('maSV', $student->maSV)->get();
+
+        if ($existingFaces->isNotEmpty()) {
+            $oldFaceIds = $existingFaces
+                ->pluck('rekognition_face_id')
+                ->filter()
+                ->values()
+                ->all();
+
+            if (!empty($oldFaceIds)) {
+                try {
+                    $this->client->deleteFaces([
+                        'CollectionId' => $this->collectionId,
+                        'FaceIds' => $oldFaceIds,
+                    ]);
+                } catch (\Throwable $e) {
+                }
+            }
+
+            StudentFace::where('maSV', $student->maSV)->delete();
+        }
+
+        try {
+            $result = $this->client->indexFaces([
+                'CollectionId' => $this->collectionId,
+                'Image' => [
+                    'Bytes' => $imageBytes,
+                ],
+                'ExternalImageId' => (string) $student->maSV,
+                'MaxFaces' => 1,
+                'QualityFilter' => 'AUTO',
+                'DetectionAttributes' => [],
+            ])->toArray();
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('Không thể gọi AWS Rekognition: ' . $e->getMessage());
+        }
+
+        $faceRecord = $result['FaceRecords'][0]['Face'] ?? null;
+
+        if (!$faceRecord || empty($faceRecord['FaceId'])) {
+            throw new \RuntimeException('Không phát hiện được khuôn mặt hợp lệ trong avatar.');
+        }
+
+        StudentFace::create([
+            'maSV' => $student->maSV,
+            'rekognition_face_id' => $faceRecord['FaceId'],
+            'external_image_id' => $faceRecord['ExternalImageId'] ?? $student->maSV,
+            'collection_id' => $this->collectionId,
+            'is_active' => true,
+        ]);
     }
 
     private function getAvatarBytes(string $avatar): string
@@ -41,7 +108,6 @@ class RekognitionFaceService
             throw new \RuntimeException('Avatar trống.');
         }
 
-        // Nếu là URL Cloudinary
         if (Str::startsWith($avatar, ['http://', 'https://'])) {
             $response = Http::timeout(30)->get($avatar);
 
@@ -52,7 +118,6 @@ class RekognitionFaceService
             return $response->body();
         }
 
-        // Nếu là path local cũ
         $relativePath = ltrim($avatar, '/');
 
         $possiblePaths = [
