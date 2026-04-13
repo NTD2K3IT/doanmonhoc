@@ -389,7 +389,7 @@
         const historyBody = document.getElementById('attendance-history-body');
         const historyEmpty = document.getElementById('attendance-history-empty');
         const historyTableWrap = document.getElementById('attendance-history-table-wrap');
-        const checkInUrl = '{{ url(' / sinhvien / quet - ma - diem - danh / check - in ') }}';
+        const checkInUrl = '{{ url('/sinhvien/quet-ma-diem-danh/check-in') }}';
         const csrfToken = '{{ csrf_token() }}';
         const readerElement = document.getElementById('student-qr-reader');
         const toggleCameraBtn = document.getElementById('toggle-camera-btn');
