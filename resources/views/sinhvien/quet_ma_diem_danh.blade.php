@@ -65,12 +65,33 @@
         align-items: center;
         justify-content: center;
         padding: 16px;
+        overflow: hidden;
     }
 
     #student-qr-reader {
         width: 100%;
         max-width: 420px;
         margin: 0 auto;
+        position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+    }
+
+    #student-qr-reader video {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 320px;
+        object-fit: cover;
+        border-radius: 16px;
+        background: #000;
+    }
+
+    #student-qr-reader__scan_region {
+        min-height: 240px;
+    }
+
+    #student-qr-reader img {
+        max-width: 100%;
     }
 
     .scan-placeholder {
@@ -79,6 +100,7 @@
         font-size: 14px;
         line-height: 1.7;
         max-width: 240px;
+        margin: 0 auto;
     }
 
     .scan-actions {
@@ -111,6 +133,13 @@
         border: 1px solid var(--border);
         background: #fff;
         color: var(--text);
+    }
+
+    .scan-btn:disabled,
+    .scan-btn-secondary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
     }
 
     .scan-result {
@@ -233,6 +262,14 @@
             padding: 12px;
         }
 
+        #student-qr-reader video {
+            max-height: 260px;
+        }
+
+        #student-qr-reader__scan_region {
+            min-height: 220px;
+        }
+
         .scan-head,
         .history-head,
         .scan-actions {
@@ -307,7 +344,9 @@
 
         <div class="scan-reader-box">
             <div id="student-qr-reader">
-                <div class="scan-placeholder">Nhấn <strong>Bật camera</strong> để bắt đầu quét mã QR sự kiện.</div>
+                <div class="scan-placeholder">
+                    Nhấn <strong>Bật camera</strong> để bắt đầu quét mã QR sự kiện.
+                </div>
             </div>
         </div>
 
@@ -322,7 +361,10 @@
         <div class="scan-title" style="font-size:16px;">Nhập mã thủ công</div>
         <div class="fallback-note">Dùng khi camera không mở được hoặc mã QR khó quét.</div>
 
-        <textarea id="manual-qr-input" class="manual-input" placeholder="Ví dụ: 1 hoặc 15 hoặc 28"></textarea>
+        <textarea
+            id="manual-qr-input"
+            class="manual-input"
+            placeholder="Ví dụ: 1 hoặc 15 hoặc 28"></textarea>
 
         <div class="scan-actions">
             <button type="button" class="scan-btn" id="manual-submit-btn">Xác nhận điểm danh</button>
@@ -353,14 +395,18 @@
                         <td data-label="Sự kiện">{{ $item['event_name'] }}</td>
                         <td data-label="Ngày">{{ $item['date'] }}</td>
                         <td data-label="Giờ">{{ $item['time'] }}</td>
-                        <td data-label="Trạng thái"><span class="history-status">{{ $item['status'] }}</span></td>
+                        <td data-label="Trạng thái">
+                            <span class="history-status">{{ $item['status'] }}</span>
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
         @else
-        <div class="empty-box" id="attendance-history-empty">Chưa có dữ liệu điểm danh gần đây.</div>
+        <div class="empty-box" id="attendance-history-empty">
+            Chưa có dữ liệu điểm danh gần đây.
+        </div>
 
         <div class="history-table-wrap" style="display:none;" id="attendance-history-table-wrap">
             <table class="history-table">
@@ -389,8 +435,8 @@
         const historyBody = document.getElementById('attendance-history-body');
         const historyEmpty = document.getElementById('attendance-history-empty');
         const historyTableWrap = document.getElementById('attendance-history-table-wrap');
-        const checkInUrl = '{{ url('/sinhvien/quet-ma-diem-danh/check-in') }}';
-        const csrfToken = '{{ csrf_token() }}';
+        const checkInUrl = @json(url('/sinhvien/quet-ma-diem-danh/check-in'));
+        const csrfToken = @json(csrf_token());
         const readerElement = document.getElementById('student-qr-reader');
         const toggleCameraBtn = document.getElementById('toggle-camera-btn');
 
@@ -405,7 +451,11 @@
         }
 
         function renderCameraOffState() {
-            readerElement.innerHTML = '<div class="scan-placeholder">Nhấn <strong>Bật camera</strong> để bắt đầu quét mã QR sự kiện.</div>';
+            readerElement.innerHTML = `
+                <div class="scan-placeholder">
+                    Nhấn <strong>Bật camera</strong> để bắt đầu quét mã QR sự kiện.
+                </div>
+            `;
         }
 
         function setToggleButtonState() {
@@ -434,8 +484,13 @@
                 </tr>
             `;
 
-            if (historyEmpty) historyEmpty.remove();
-            if (historyTableWrap) historyTableWrap.style.display = 'block';
+            if (historyEmpty) {
+                historyEmpty.remove();
+            }
+
+            if (historyTableWrap) {
+                historyTableWrap.style.display = 'block';
+            }
 
             historyBody.insertAdjacentHTML('afterbegin', rowHtml);
 
@@ -466,18 +521,76 @@
                 }
 
                 showResult(result.message, 'success');
-                if (result.attendance) prependHistoryRow(result.attendance);
+
+                if (result.attendance) {
+                    prependHistoryRow(result.attendance);
+                }
             } catch (error) {
                 showResult('Lỗi kết nối khi gửi điểm danh.', 'error');
             }
         }
 
+        function applyInlineVideoAttributes() {
+            const video = readerElement.querySelector('video');
+
+            if (!video) return false;
+
+            video.setAttribute('playsinline', 'true');
+            video.setAttribute('webkit-playsinline', 'true');
+            video.setAttribute('muted', 'true');
+            video.setAttribute('autoplay', 'true');
+            video.playsInline = true;
+            video.muted = true;
+            video.autoplay = true;
+
+            return true;
+        }
+
+        async function ensureInlineVideo() {
+            for (let i = 0; i < 12; i++) {
+                if (applyInlineVideoAttributes()) {
+                    break;
+                }
+
+                await new Promise((resolve) => setTimeout(resolve, 120));
+            }
+        }
+
+        async function getPreferredCameraConfig() {
+            try {
+                const cameras = await Html5Qrcode.getCameras();
+
+                if (Array.isArray(cameras) && cameras.length > 0) {
+                    const preferred =
+                        cameras.find((camera) =>
+                            /back|rear|environment|traseira|trasera/i.test(camera.label || '')
+                        ) || cameras[0];
+
+                    if (preferred?.id) {
+                        return {
+                            deviceId: {
+                                exact: preferred.id
+                            }
+                        };
+                    }
+                }
+            } catch (error) {
+                console.error('Không lấy được danh sách camera:', error);
+            }
+
+            return {
+                facingMode: 'environment'
+            };
+        }
+
         manualSubmitBtn.addEventListener('click', function() {
             const value = manualInput.value.trim();
+
             if (!value) {
                 showResult('Vui lòng nhập mã hoạt động.', 'error');
                 return;
             }
+
             submitAttendance(value);
         });
 
@@ -486,13 +599,18 @@
         });
 
         if (typeof Html5Qrcode === 'undefined') {
-            readerElement.innerHTML = '<div class="scan-placeholder">Không tải được thư viện quét QR. Vui lòng kiểm tra kết nối mạng.</div>';
+            readerElement.innerHTML = `
+                <div class="scan-placeholder">
+                    Không tải được thư viện quét QR. Vui lòng kiểm tra kết nối mạng.
+                </div>
+            `;
             toggleCameraBtn.disabled = true;
             return;
         }
 
         async function startScanner() {
             if (scannerRunning || scannerBusy) return;
+
             scannerBusy = true;
             setToggleButtonState();
 
@@ -500,16 +618,24 @@
                 readerElement.innerHTML = '';
                 html5QrCode = new Html5Qrcode('student-qr-reader');
 
-                await html5QrCode.start({
-                        facingMode: 'environment'
-                    }, {
+                const cameraConfig = await getPreferredCameraConfig();
+
+                await html5QrCode.start(
+                    cameraConfig, {
                         fps: 10,
-                        qrbox: 220
+                        qrbox: {
+                            width: 220,
+                            height: 220
+                        },
+                        aspectRatio: 1,
+                        disableFlip: false,
                     },
                     async (decodedText) => {
                             if (scanLock) return;
+
                             scanLock = true;
                             await submitAttendance(decodedText);
+
                             setTimeout(() => {
                                 scanLock = false;
                             }, 1500);
@@ -517,11 +643,16 @@
                         () => {}
                 );
 
+                await ensureInlineVideo();
+
                 scannerRunning = true;
                 showResult('Camera đã sẵn sàng. Đưa mã QR vào khung quét.', 'success');
             } catch (error) {
+                console.error(error);
+
                 renderCameraOffState();
                 showResult('Không thể mở camera. Hãy cho phép quyền camera trong trình duyệt.', 'error');
+
                 html5QrCode = null;
                 scannerRunning = false;
             }
@@ -532,6 +663,7 @@
 
         async function stopScanner() {
             if (!scannerRunning || !html5QrCode || scannerBusy) return;
+
             scannerBusy = true;
             setToggleButtonState();
 
@@ -556,6 +688,18 @@
                 await stopScanner();
             } else {
                 await startScanner();
+            }
+        });
+
+        window.addEventListener('pagehide', function() {
+            if (scannerRunning) {
+                stopScanner();
+            }
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && scannerRunning) {
+                stopScanner();
             }
         });
 
