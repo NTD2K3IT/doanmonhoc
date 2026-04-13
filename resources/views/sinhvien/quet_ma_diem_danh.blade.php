@@ -388,51 +388,51 @@
         </div>
 
         @if (!empty($recentAttendances) && count($recentAttendances) > 0)
-        <div class="history-table-wrap" id="attendance-history-table-wrap">
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Sự kiện</th>
-                        <th>Ngày</th>
-                        <th>Giờ</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                </thead>
-                <tbody id="attendance-history-body">
-                    @foreach ($recentAttendances as $item)
-                    <tr>
-                        <td data-label="Sự kiện">{{ $item['event_name'] }}</td>
-                        <td data-label="Ngày">{{ $item['date'] }}</td>
-                        <td data-label="Giờ">{{ $item['time'] }}</td>
-                        <td data-label="Trạng thái"><span class="history-status">{{ $item['status'] }}</span></td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+            <div class="history-table-wrap" id="attendance-history-table-wrap">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Sự kiện</th>
+                            <th>Ngày</th>
+                            <th>Giờ</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-history-body">
+                        @foreach ($recentAttendances as $item)
+                            <tr>
+                                <td data-label="Sự kiện">{{ $item['event_name'] }}</td>
+                                <td data-label="Ngày">{{ $item['date'] }}</td>
+                                <td data-label="Giờ">{{ $item['time'] }}</td>
+                                <td data-label="Trạng thái"><span class="history-status">{{ $item['status'] }}</span></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @else
-        <div class="empty-box" id="attendance-history-empty">Chưa có dữ liệu điểm danh gần đây.</div>
+            <div class="empty-box" id="attendance-history-empty">Chưa có dữ liệu điểm danh gần đây.</div>
 
-        <div class="history-table-wrap" style="display:none;" id="attendance-history-table-wrap">
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Sự kiện</th>
-                        <th>Ngày</th>
-                        <th>Giờ</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                </thead>
-                <tbody id="attendance-history-body"></tbody>
-            </table>
-        </div>
+            <div class="history-table-wrap" style="display:none;" id="attendance-history-table-wrap">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Sự kiện</th>
+                            <th>Ngày</th>
+                            <th>Giờ</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-history-body"></tbody>
+                </table>
+            </div>
         @endif
     </section>
 </div>
 
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const resultBox = document.getElementById('student-scan-result');
         const manualInput = document.getElementById('manual-qr-input');
         const manualSubmitBtn = document.getElementById('manual-submit-btn');
@@ -613,30 +613,25 @@
 
                 const rearCameraId = await getBestRearCameraId();
 
-                await html5QrCode.start({
-                        deviceId: {
-                            exact: rearCameraId
-                        }
-                    }, {
+                await html5QrCode.start(
+                    { deviceId: { exact: rearCameraId } },
+                    {
                         fps: 10,
-                        qrbox: {
-                            width: 220,
-                            height: 220
-                        },
+                        qrbox: { width: 220, height: 220 },
                         aspectRatio: 1,
                         disableFlip: false,
                     },
                     async (decodedText) => {
-                            if (scanLock) return;
+                        if (scanLock) return;
 
-                            scanLock = true;
-                            await submitAttendance(decodedText);
+                        scanLock = true;
+                        await submitAttendance(decodedText);
 
-                            setTimeout(() => {
-                                scanLock = false;
-                            }, 1500);
-                        },
-                        () => {}
+                        setTimeout(() => {
+                            scanLock = false;
+                        }, 1500);
+                    },
+                    () => {}
                 );
 
                 await waitAndApplyInlineVideo();
@@ -679,7 +674,7 @@
             setToggleButtonState();
         }
 
-        manualSubmitBtn.addEventListener('click', function() {
+        manualSubmitBtn.addEventListener('click', function () {
             const value = manualInput.value.trim();
 
             if (!value) {
@@ -690,7 +685,7 @@
             submitAttendance(value);
         });
 
-        manualClearBtn.addEventListener('click', function() {
+        manualClearBtn.addEventListener('click', function () {
             manualInput.value = '';
         });
 
@@ -704,7 +699,7 @@
             return;
         }
 
-        toggleCameraBtn.addEventListener('click', async function() {
+        toggleCameraBtn.addEventListener('click', async function () {
             if (scannerRunning) {
                 await stopScanner();
             } else {
@@ -712,13 +707,13 @@
             }
         });
 
-        window.addEventListener('pagehide', function() {
+        window.addEventListener('pagehide', function () {
             if (scannerRunning) {
                 stopScanner();
             }
         });
 
-        document.addEventListener('visibilitychange', function() {
+        document.addEventListener('visibilitychange', function () {
             if (document.hidden && scannerRunning) {
                 stopScanner();
             }
