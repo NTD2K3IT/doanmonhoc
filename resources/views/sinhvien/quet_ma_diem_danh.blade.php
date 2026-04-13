@@ -444,6 +444,7 @@
         let scanLock = false;
         let scannerRunning = false;
         let scannerBusy = false;
+        let activeCameraId = null;
 
         function showResult(message, type = 'success') {
             resultBox.className = 'scan-result ' + type;
@@ -530,6 +531,45 @@
             }
         }
 
+        async function requestCameraPermission() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Trình duyệt không hỗ trợ camera.');
+            }
+
+            const tempStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: false,
+            });
+
+            tempStream.getTracks().forEach(track => track.stop());
+        }
+
+        function isMobileDevice() {
+            return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        }
+
+        async function getBestRearCameraId() {
+            const cameras = await Html5Qrcode.getCameras();
+
+            if (!Array.isArray(cameras) || cameras.length === 0) {
+                throw new Error('Không tìm thấy camera.');
+            }
+
+            const rearRegex = /back|rear|environment|wide|ultra|traseira|trasera|hậu|sau/i;
+
+            const rearCamera = cameras.find(camera => rearRegex.test(camera.label || ''));
+
+            if (rearCamera?.id) {
+                return rearCamera.id;
+            }
+
+            if (isMobileDevice()) {
+                return cameras[cameras.length - 1].id;
+            }
+
+            return cameras[0].id;
+        }
+
         function applyInlineVideoAttributes() {
             const video = readerElement.querySelector('video');
 
@@ -543,44 +583,104 @@
             video.muted = true;
             video.autoplay = true;
 
+            video.play?.().catch(() => {});
+
             return true;
         }
 
-        async function ensureInlineVideo() {
+        async function waitAndApplyInlineVideo() {
             for (let i = 0; i < 12; i++) {
                 if (applyInlineVideoAttributes()) {
                     break;
                 }
 
-                await new Promise((resolve) => setTimeout(resolve, 120));
+                await new Promise(resolve => setTimeout(resolve, 120));
             }
         }
 
-        async function getPreferredCameraConfig() {
+        async function startScanner() {
+            if (scannerRunning || scannerBusy) return;
+
+            scannerBusy = true;
+            setToggleButtonState();
+
             try {
-                const cameras = await Html5Qrcode.getCameras();
+                await requestCameraPermission();
 
-                if (Array.isArray(cameras) && cameras.length > 0) {
-                    const preferred =
-                        cameras.find((camera) =>
-                            /back|rear|environment|traseira|trasera/i.test(camera.label || '')
-                        ) || cameras[0];
+                readerElement.innerHTML = '';
+                html5QrCode = new Html5Qrcode('student-qr-reader');
 
-                    if (preferred?.id) {
-                        return {
-                            deviceId: {
-                                exact: preferred.id
-                            }
-                        };
-                    }
-                }
+                activeCameraId = await getBestRearCameraId();
+
+                await html5QrCode.start({
+                        deviceId: {
+                            exact: activeCameraId
+                        }
+                    }, {
+                        fps: 10,
+                        qrbox: {
+                            width: 220,
+                            height: 220
+                        },
+                        aspectRatio: 1,
+                        disableFlip: false,
+                    },
+                    async (decodedText) => {
+                            if (scanLock) return;
+
+                            scanLock = true;
+                            await submitAttendance(decodedText);
+
+                            setTimeout(() => {
+                                scanLock = false;
+                            }, 1500);
+                        },
+                        () => {}
+                );
+
+                await waitAndApplyInlineVideo();
+
+                scannerRunning = true;
+                showResult('Camera sau đã sẵn sàng. Đưa mã QR vào khung quét.', 'success');
             } catch (error) {
-                console.error('Không lấy được danh sách camera:', error);
+                console.error(error);
+
+                renderCameraOffState();
+                scannerRunning = false;
+                html5QrCode = null;
+                activeCameraId = null;
+
+                showResult(
+                    'Không thể mở camera sau. Nếu bạn đang mở trong trình duyệt bên trong ứng dụng, hãy mở bằng Safari hoặc Chrome.',
+                    'error'
+                );
             }
 
-            return {
-                facingMode: 'environment'
-            };
+            scannerBusy = false;
+            setToggleButtonState();
+        }
+
+        async function stopScanner() {
+            if (!html5QrCode || scannerBusy) return;
+
+            scannerBusy = true;
+            setToggleButtonState();
+
+            try {
+                await html5QrCode.stop();
+                await html5QrCode.clear();
+            } catch (error) {
+                console.error(error);
+            }
+
+            html5QrCode = null;
+            activeCameraId = null;
+            scannerRunning = false;
+            renderCameraOffState();
+            showResult('Camera đã được tắt.', 'success');
+
+            scannerBusy = false;
+            setToggleButtonState();
         }
 
         manualSubmitBtn.addEventListener('click', function() {
@@ -606,81 +706,6 @@
             `;
             toggleCameraBtn.disabled = true;
             return;
-        }
-
-        async function startScanner() {
-            if (scannerRunning || scannerBusy) return;
-
-            scannerBusy = true;
-            setToggleButtonState();
-
-            try {
-                readerElement.innerHTML = '';
-                html5QrCode = new Html5Qrcode('student-qr-reader');
-
-                const cameraConfig = await getPreferredCameraConfig();
-
-                await html5QrCode.start(
-                    cameraConfig, {
-                        fps: 10,
-                        qrbox: {
-                            width: 220,
-                            height: 220
-                        },
-                        aspectRatio: 1,
-                        disableFlip: false,
-                    },
-                    async (decodedText) => {
-                            if (scanLock) return;
-
-                            scanLock = true;
-                            await submitAttendance(decodedText);
-
-                            setTimeout(() => {
-                                scanLock = false;
-                            }, 1500);
-                        },
-                        () => {}
-                );
-
-                await ensureInlineVideo();
-
-                scannerRunning = true;
-                showResult('Camera đã sẵn sàng. Đưa mã QR vào khung quét.', 'success');
-            } catch (error) {
-                console.error(error);
-
-                renderCameraOffState();
-                showResult('Không thể mở camera. Hãy cho phép quyền camera trong trình duyệt.', 'error');
-
-                html5QrCode = null;
-                scannerRunning = false;
-            }
-
-            scannerBusy = false;
-            setToggleButtonState();
-        }
-
-        async function stopScanner() {
-            if (!scannerRunning || !html5QrCode || scannerBusy) return;
-
-            scannerBusy = true;
-            setToggleButtonState();
-
-            try {
-                await html5QrCode.stop();
-                await html5QrCode.clear();
-            } catch (error) {
-                console.error(error);
-            }
-
-            html5QrCode = null;
-            scannerRunning = false;
-            renderCameraOffState();
-            showResult('Camera đã được tắt.', 'success');
-
-            scannerBusy = false;
-            setToggleButtonState();
         }
 
         toggleCameraBtn.addEventListener('click', async function() {
