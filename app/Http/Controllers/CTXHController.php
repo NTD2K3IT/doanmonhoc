@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use App\Models\HoatDong;
 use App\Models\ActivityLog;
@@ -136,30 +137,39 @@ class CTXHController extends Controller
     {
         $data = $this->validateStudent($request);
 
-        if ($request->hasFile('avatar')) {
-            $upload = Cloudinary::upload(
-                $request->file('avatar')->getRealPath(),
-                ['folder' => 'avatars']
+        DB::transaction(function () use ($request, $data) {
+            if ($request->hasFile('avatar')) {
+                $upload = Cloudinary::upload(
+                    $request->file('avatar')->getRealPath(),
+                    ['folder' => 'avatars']
+                );
+
+                $data['avatar'] = $upload->getSecurePath();
+            }
+
+            $student = Student::create($data);
+
+            User::firstOrCreate(
+                ['username' => $student->maSV],
+                [
+                    'password' => $student->maSV,
+                    'role' => 'sinhvien',
+                ]
             );
 
-            $data['avatar'] = $upload->getSecurePath();
-        }
-
-        $student = Student::create($data);
-
-        $this->writeActivityLog(
-            'student',
-            'create',
-            $data['maSV'],
-            $data['hoTen'],
-            'Thêm sinh viên mới'
-        );
+            $this->writeActivityLog(
+                'student',
+                'create',
+                $student->maSV,
+                $student->hoTen,
+                'Thêm sinh viên mới'
+            );
+        });
 
         return redirect()
             ->route('ctxh.students')
-            ->with('success', 'Thêm sinh viên thành công.');
+            ->with('success', 'Thêm sinh viên thành công. Hệ thống đã tự tạo tài khoản đăng nhập với username = password = MSSV.');
     }
-
     public function editStudent(Student $student): View
     {
         $statusOptions = $this->studentStatusOptions();
@@ -174,39 +184,43 @@ class CTXHController extends Controller
         RekognitionFaceService $faceService
     ): RedirectResponse {
         $oldAvatar = $student->avatar;
+        $oldMaSV = $student->maSV;
 
         $data = $this->validateStudent($request, $student);
 
-        if ($request->hasFile('avatar')) {
-            $upload = Cloudinary::upload(
-                $request->file('avatar')->getRealPath(),
-                ['folder' => 'avatars']
-            );
+        DB::transaction(function () use ($request, $data, $student, $oldAvatar, $oldMaSV, $faceService) {
+            if ($request->hasFile('avatar')) {
+                $upload = Cloudinary::upload(
+                    $request->file('avatar')->getRealPath(),
+                    ['folder' => 'avatars']
+                );
 
-            $data['avatar'] = $upload->getSecurePath();
-        }
-
-        $student->update($data);
-
-        $avatarChanged = $request->hasFile('avatar') || ($oldAvatar !== $student->avatar);
-
-        if ($avatarChanged && !empty($student->avatar)) {
-            try {
-                $faceService->syncFromAvatar($student->fresh());
-            } catch (\Throwable $e) {
-                return redirect()
-                    ->route('ctxh.students.edit', $student)
-                    ->with('success', 'Cập nhật sinh viên thành công nhưng không đồng bộ được khuôn mặt: ' . $e->getMessage());
+                $data['avatar'] = $upload->getSecurePath();
             }
-        }
 
-        $this->writeActivityLog(
-            'student',
-            'update',
-            $student->maSV,
-            $student->hoTen,
-            'Cập nhật thông tin sinh viên'
-        );
+            $student->update($data);
+
+            if ($oldMaSV !== $student->maSV) {
+                User::where('username', $oldMaSV)->update([
+                    'username' => $student->maSV,
+                    'password' => $student->maSV,
+                ]);
+            }
+
+            $avatarChanged = $request->hasFile('avatar') || ($oldAvatar !== $student->avatar);
+
+            if ($avatarChanged && !empty($student->avatar)) {
+                $faceService->syncFromAvatar($student->fresh());
+            }
+
+            $this->writeActivityLog(
+                'student',
+                'update',
+                $student->maSV,
+                $student->hoTen,
+                'Cập nhật thông tin sinh viên'
+            );
+        });
 
         return redirect()
             ->route('ctxh.students')
@@ -214,15 +228,18 @@ class CTXHController extends Controller
     }
     public function destroyStudent(Student $student): RedirectResponse
     {
-        $this->writeActivityLog(
-            'student',
-            'delete',
-            $student->maSV,
-            $student->hoTen,
-            'Xóa sinh viên'
-        );
+        DB::transaction(function () use ($student) {
+            $this->writeActivityLog(
+                'student',
+                'delete',
+                $student->maSV,
+                $student->hoTen,
+                'Xóa sinh viên'
+            );
 
-        $student->delete();
+            User::where('username', $student->maSV)->delete();
+            $student->delete();
+        });
 
         return redirect()
             ->route('ctxh.students')
