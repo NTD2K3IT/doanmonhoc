@@ -137,26 +137,39 @@ class CTXHController extends Controller
     {
         $data = $this->validateStudent($request);
 
-        DB::transaction(function () use ($request, $data) {
-            if ($request->hasFile('avatar')) {
-                $upload = Cloudinary::upload(
-                    $request->file('avatar')->getRealPath(),
-                    ['folder' => 'avatars']
-                );
-
-                $data['avatar'] = $upload->getSecurePath();
-            }
-
-            $student = Student::create($data);
-
-            User::firstOrCreate(
-                ['username' => $student->maSV],
-                [
-                    'password' => $student->maSV,
-                    'role' => 'sinhvien',
-                ]
+        if ($request->hasFile('avatar')) {
+            $upload = Cloudinary::upload(
+                $request->file('avatar')->getRealPath(),
+                ['folder' => 'avatars']
             );
 
+            $data['avatar'] = $upload->getSecurePath();
+        }
+
+        $student = Student::create($data);
+
+        // Tạo tài khoản users tương ứng, không dùng transaction
+        try {
+            $existingUser = User::where('username', $student->maSV)->first();
+
+            if (!$existingUser) {
+                User::create([
+                    'id' => ((int) User::max('id')) + 1,
+                    'username' => $student->maSV,
+                    'password' => $student->maSV, // giữ plain text theo cơ chế hiện tại
+                    'role' => 'sinhvien',
+                ]);
+            }
+        } catch (\Throwable $e) {
+            return redirect()
+                ->route('ctxh.students.create')
+                ->withInput()
+                ->withErrors([
+                    'account' => 'Đã thêm sinh viên nhưng tạo tài khoản đăng nhập thất bại: ' . $e->getMessage(),
+                ]);
+        }
+
+        try {
             $this->writeActivityLog(
                 'student',
                 'create',
@@ -164,7 +177,8 @@ class CTXHController extends Controller
                 $student->hoTen,
                 'Thêm sinh viên mới'
             );
-        });
+        } catch (\Throwable $e) {
+        }
 
         return redirect()
             ->route('ctxh.students')
@@ -188,31 +202,44 @@ class CTXHController extends Controller
 
         $data = $this->validateStudent($request, $student);
 
-        DB::transaction(function () use ($request, $data, $student, $oldAvatar, $oldMaSV, $faceService) {
-            if ($request->hasFile('avatar')) {
-                $upload = Cloudinary::upload(
-                    $request->file('avatar')->getRealPath(),
-                    ['folder' => 'avatars']
-                );
+        if ($request->hasFile('avatar')) {
+            $upload = Cloudinary::upload(
+                $request->file('avatar')->getRealPath(),
+                ['folder' => 'avatars']
+            );
 
-                $data['avatar'] = $upload->getSecurePath();
-            }
+            $data['avatar'] = $upload->getSecurePath();
+        }
 
-            $student->update($data);
+        $student->update($data);
 
-            if ($oldMaSV !== $student->maSV) {
+        // Nếu đổi mã sinh viên thì đồng bộ bảng users luôn
+        if ($oldMaSV !== $student->maSV) {
+            try {
                 User::where('username', $oldMaSV)->update([
                     'username' => $student->maSV,
                     'password' => $student->maSV,
                 ]);
+            } catch (\Throwable $e) {
+                return redirect()
+                    ->route('ctxh.students.edit', $student)
+                    ->with('warning', 'Cập nhật sinh viên thành công nhưng không cập nhật được tài khoản đăng nhập: ' . $e->getMessage());
             }
+        }
 
-            $avatarChanged = $request->hasFile('avatar') || ($oldAvatar !== $student->avatar);
+        $avatarChanged = $request->hasFile('avatar') || ($oldAvatar !== $student->avatar);
 
-            if ($avatarChanged && !empty($student->avatar)) {
+        if ($avatarChanged && !empty($student->avatar)) {
+            try {
                 $faceService->syncFromAvatar($student->fresh());
+            } catch (\Throwable $e) {
+                return redirect()
+                    ->route('ctxh.students.edit', $student)
+                    ->with('warning', 'Cập nhật sinh viên thành công nhưng không đồng bộ được khuôn mặt: ' . $e->getMessage());
             }
+        }
 
+        try {
             $this->writeActivityLog(
                 'student',
                 'update',
@@ -220,7 +247,8 @@ class CTXHController extends Controller
                 $student->hoTen,
                 'Cập nhật thông tin sinh viên'
             );
-        });
+        } catch (\Throwable $e) {
+        }
 
         return redirect()
             ->route('ctxh.students')
@@ -228,18 +256,29 @@ class CTXHController extends Controller
     }
     public function destroyStudent(Student $student): RedirectResponse
     {
-        DB::transaction(function () use ($student) {
+        $maSV = $student->maSV;
+        $hoTen = $student->hoTen;
+
+        try {
+            User::where('username', $maSV)->delete();
+        } catch (\Throwable $e) {
+            return redirect()
+                ->route('ctxh.students')
+                ->with('error', 'Không thể xóa tài khoản đăng nhập của sinh viên: ' . $e->getMessage());
+        }
+
+        $student->delete();
+
+        try {
             $this->writeActivityLog(
                 'student',
                 'delete',
-                $student->maSV,
-                $student->hoTen,
+                $maSV,
+                $hoTen,
                 'Xóa sinh viên'
             );
-
-            User::where('username', $student->maSV)->delete();
-            $student->delete();
-        });
+        } catch (\Throwable $e) {
+        }
 
         return redirect()
             ->route('ctxh.students')

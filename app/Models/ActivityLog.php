@@ -8,8 +8,6 @@ class ActivityLog extends Model
 {
     protected $table = 'activity_logs';
 
-    public $timestamps = false;
-
     protected $fillable = [
         'entity_type',
         'action',
@@ -18,4 +16,6 @@ class ActivityLog extends Model
         'description',
         'created_at',
     ];
+
+    public $timestamps = false;
 }
