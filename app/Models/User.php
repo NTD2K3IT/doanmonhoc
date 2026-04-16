@@ -12,10 +12,10 @@ class User extends Authenticatable
     protected $table = 'users';
     public $timestamps = false;
 
-
     protected $fillable = [
+        'id',
         'username',
-        'password',         
+        'password',
         'role',
     ];
 
