@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+
 use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
@@ -46,7 +47,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/ctxh/diem-danh-khuon-mat', [AdminFaceController::class, 'faceAttendance'])->name('ctxh.face_attendance');
     Route::post('/ctxh/diem-danh-khuon-mat/scan', [AdminFaceController::class, 'saveFaceAttendance'])->name('ctxh.face_attendance.save');
-
 });
 
 Route::middleware(['auth', 'role:sinhvien'])->group(function () {
@@ -74,4 +74,9 @@ Route::middleware(['auth', 'role:sinhvien'])->group(function () {
 
     Route::post('/sinhvien/quet-ma-diem-danh/check-in', [StudentAttendanceController::class, 'studentCheckInByEventQr'])
         ->name('sinhvien.scan_qr.check_in');
+    Route::get('/dang-ky-hoat-dong', [StudentDashboardController::class, 'studentEventsOpen'])
+        ->name('sinhvien.events.open');
+
+    Route::post('/dang-ky-hoat-dong/{maHoatDong}', [StudentDashboardController::class, 'registerEvent'])
+        ->name('sinhvien.events.register');
 });

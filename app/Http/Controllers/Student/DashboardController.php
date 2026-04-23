@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Student;
 
+use App\Models\DangKyHoatDong;
+use App\Models\HoatDong;
 use App\Http\Controllers\Concerns\HandlesCtxhSharedLogic;
 use App\Http\Controllers\Controller;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
@@ -153,5 +155,74 @@ class DashboardController extends Controller
         return redirect()
             ->route('sinhvien.profile')
             ->with('success_password', 'Đổi mật khẩu thành công.');
+    }
+    public function studentEventsOpen(): \Illuminate\View\View
+    {
+        $user = auth()->user();
+
+        $student = \App\Models\Student::where('maSV', $user->username)->first();
+
+        if (!$student) {
+            abort(404, 'Không tìm thấy hồ sơ sinh viên tương ứng với tài khoản đăng nhập.');
+        }
+
+        $events = HoatDong::query()
+            ->whereIn('trangThai', ['Mở', 'open', 'Open'])
+            ->orderByDesc('thoiGianBatDau')
+            ->get();
+
+        $registeredEventIds = DangKyHoatDong::query()
+            ->where('maSV', $student->maSV)
+            ->pluck('maHoatDong')
+            ->map(fn($id) => (int) $id)
+            ->toArray();
+
+        return view('sinhvien.dang_ky_hoat_dong', compact('student', 'events', 'registeredEventIds'));
+    }
+
+    public function registerEvent(Request $request, $maHoatDong): RedirectResponse
+    {
+        $user = auth()->user();
+
+        $student = \App\Models\Student::where('maSV', $user->username)->first();
+
+        if (!$student) {
+            abort(404, 'Không tìm thấy hồ sơ sinh viên tương ứng với tài khoản đăng nhập.');
+        }
+
+        $event = HoatDong::where('maHoatDong', $maHoatDong)->first();
+
+        if (!$event) {
+            return redirect()
+                ->back()
+                ->with('error', 'Không tìm thấy hoạt động.');
+        }
+
+        if (!in_array($event->trangThai, ['Mở', 'open', 'Open'], true)) {
+            return redirect()
+                ->back()
+                ->with('error', 'Hoạt động này hiện không mở đăng ký.');
+        }
+
+        $exists = DangKyHoatDong::where('maSV', $student->maSV)
+            ->where('maHoatDong', $event->maHoatDong)
+            ->exists();
+
+        if ($exists) {
+            return redirect()
+                ->back()
+                ->with('info', 'Bạn đã đăng ký hoạt động này rồi.');
+        }
+
+        DangKyHoatDong::create([
+            'maSV' => $student->maSV,
+            'maHoatDong' => $event->maHoatDong,
+            'thoiGianDangKy' => now(),
+            'trangThai' => 'registered',
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Đăng ký hoạt động thành công.');
     }
 }

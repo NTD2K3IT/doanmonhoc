@@ -1,43 +1,44 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('student_title', 'Cổng Sinh Viên')</title>
+
     @php
-    $authUser = auth()->user();
+        $authUser = auth()->user();
 
-    $layoutStudent = null;
-    $layoutAvatarUrl = null;
-    $layoutDisplayName = $authUser->username ?? 'Sinh viên';
-    $layoutDisplayCode = $authUser->role ?? 'sinhvien';
+        $layoutStudent = null;
+        $layoutAvatarUrl = null;
+        $layoutDisplayName = $authUser->username ?? 'Sinh viên';
+        $layoutDisplayCode = $authUser->role ?? 'sinhvien';
 
-    if ($authUser) {
-    $layoutStudent = \App\Models\Student::query()
-    ->select('maSV', 'hoTen', 'avatar')
-    ->where('maSV', $authUser->username)
-    ->first();
+        if ($authUser) {
+            $layoutStudent = \App\Models\Student::query()
+                ->select('maSV', 'hoTen', 'avatar')
+                ->where('maSV', $authUser->username)
+                ->first();
 
-    if ($layoutStudent) {
-    $layoutDisplayName = $layoutStudent->hoTen ?: ($authUser->username ?? 'Sinh viên');
-    $layoutDisplayCode = $layoutStudent->maSV ?: ($authUser->username ?? '');
+            if ($layoutStudent) {
+                $layoutDisplayName = $layoutStudent->hoTen ?: ($authUser->username ?? 'Sinh viên');
+                $layoutDisplayCode = $layoutStudent->maSV ?: ($authUser->username ?? '');
 
-    if (!empty($layoutStudent->avatar)) {
-    $avatarPath = trim($layoutStudent->avatar);
+                if (!empty($layoutStudent->avatar)) {
+                    $avatarPath = trim($layoutStudent->avatar);
 
-    if (\Illuminate\Support\Str::startsWith($avatarPath, ['http://', 'https://'])) {
-    $layoutAvatarUrl = $avatarPath;
-    } else {
-    $layoutAvatarUrl = asset('storage/' . ltrim($avatarPath, '/'));
-    }
-    }
-    }
-    }
+                    if (\Illuminate\Support\Str::startsWith($avatarPath, ['http://', 'https://'])) {
+                        $layoutAvatarUrl = $avatarPath;
+                    } else {
+                        $layoutAvatarUrl = asset('storage/' . ltrim($avatarPath, '/'));
+                    }
+                }
+            }
+        }
     @endphp
+
     <style>
         :root {
-            --page-bg: #f3f6fb;
+            --page-bg: #f4f7fb;
             --surface: #ffffff;
             --surface-soft: #f8fafc;
             --surface-muted: #eef4ff;
@@ -46,13 +47,14 @@
             --text-faint: #94a3b8;
             --border: #e2e8f0;
             --border-strong: #cbd5e1;
-            --primary: #1d4ed8;
+            --primary: #2563eb;
             --primary-soft: #eff6ff;
+            --success: #16a34a;
             --danger: #dc2626;
             --shadow-sm: 0 2px 10px rgba(15, 23, 42, 0.05);
-            --shadow-md: 0 14px 34px rgba(15, 23, 42, 0.08);
-            --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.16);
-            --sidebar-width: 276px;
+            --shadow-md: 0 16px 36px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 28px 60px rgba(15, 23, 42, 0.16);
+            --sidebar-width: 280px;
             --content-max: 1400px;
         }
 
@@ -63,14 +65,13 @@
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
-        html,
-        body {
+        html, body {
             min-height: 100%;
         }
 
         body {
             background:
-                radial-gradient(circle at top left, rgba(29, 78, 216, 0.06), transparent 24%),
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.06), transparent 25%),
                 radial-gradient(circle at top right, rgba(59, 130, 246, 0.05), transparent 18%),
                 var(--page-bg);
             color: var(--text);
@@ -86,10 +87,7 @@
             color: inherit;
         }
 
-        button,
-        input,
-        select,
-        textarea {
+        button, input, select, textarea {
             font: inherit;
         }
 
@@ -104,7 +102,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s ease;
-            z-index: 69;
+            z-index: 89;
         }
 
         .student-sidebar-backdrop.active {
@@ -118,20 +116,20 @@
             width: var(--sidebar-width);
             display: flex;
             flex-direction: column;
-            gap: 22px;
-            padding: 22px 16px;
-            background: rgba(255, 255, 255, 0.92);
+            gap: 20px;
+            padding: 20px 16px;
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-right: 1px solid rgba(226, 232, 240, 0.96);
-            z-index: 70;
+            z-index: 90;
             transition: transform 0.22s ease;
         }
 
         .student-brand-row {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .student-brand {
@@ -204,10 +202,11 @@
             flex-direction: column;
             gap: 8px;
             overflow-y: auto;
+            padding-right: 2px;
         }
 
         .student-menu-item {
-            min-height: 54px;
+            min-height: 56px;
             padding: 0 14px;
             border-radius: 16px;
             display: flex;
@@ -220,13 +219,13 @@
 
         .student-menu-item:hover {
             background: var(--surface-soft);
-            border-color: rgba(226, 232, 240, 0.88);
+            border-color: rgba(226, 232, 240, 0.9);
             color: var(--text);
         }
 
         .student-menu-item.active {
             background: var(--primary-soft);
-            border-color: rgba(29, 78, 216, 0.14);
+            border-color: rgba(37, 99, 235, 0.14);
             box-shadow: inset 3px 0 0 var(--primary);
             color: var(--primary);
         }
@@ -234,7 +233,7 @@
         .student-menu-icon {
             width: 30px;
             height: 30px;
-            border-radius: 11px;
+            border-radius: 10px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -313,7 +312,8 @@
             text-overflow: ellipsis;
         }
 
-        .logout-btn-sidebar {
+        .logout-btn-sidebar,
+        .logout-btn-menu {
             width: 100%;
             min-height: 44px;
             appearance: none;
@@ -329,7 +329,8 @@
             transition: 0.2s ease;
         }
 
-        .logout-btn-sidebar:hover {
+        .logout-btn-sidebar:hover,
+        .logout-btn-menu:hover {
             background: #fff7f7;
             border-color: rgba(220, 38, 38, 0.22);
         }
@@ -350,7 +351,7 @@
             padding: 14px 16px;
             border-radius: 20px;
             border: 1px solid rgba(226, 232, 240, 0.94);
-            background: rgba(255, 255, 255, 0.88);
+            background: rgba(255, 255, 255, 0.9);
             box-shadow: var(--shadow-md);
             display: flex;
             align-items: center;
@@ -424,8 +425,8 @@
         }
 
         .student-avatar {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 999px;
             display: inline-flex;
             align-items: center;
@@ -490,7 +491,7 @@
             pointer-events: none;
             transform: translateY(-6px);
             transition: opacity 0.18s ease, transform 0.18s ease;
-            z-index: 75;
+            z-index: 95;
         }
 
         .student-account-menu.open {
@@ -546,29 +547,40 @@
             padding: 0 8px;
         }
 
-        .logout-btn-menu {
-            width: 100%;
-            min-height: 46px;
-            appearance: none;
-            border: 1px solid rgba(220, 38, 38, 0.14);
-            background: #fff;
-            color: var(--danger);
-            border-radius: 14px;
-            padding: 0 14px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            text-align: left;
-            transition: 0.2s ease;
-        }
-
-        .logout-btn-menu:hover {
-            background: #fff7f7;
-            border-color: rgba(220, 38, 38, 0.22);
-        }
-
         .student-content {
             min-width: 0;
+        }
+
+        .student-flash-wrap {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .student-alert {
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .student-alert.success {
+            background: #ecfdf3;
+            color: #15803d;
+            border-color: #bbf7d0;
+        }
+
+        .student-alert.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        .student-alert.info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
         }
 
         @media (max-width: 1024px) {
@@ -650,7 +662,7 @@
                     <div class="student-brand-logo">SV</div>
                     <div class="student-brand-text">
                         <h1>Cổng Sinh Viên</h1>
-                        <p>Student Portal</p>
+                        <p>Quản lý hoạt động & điểm danh</p>
                     </div>
                 </div>
 
@@ -659,7 +671,7 @@
 
             <nav class="student-menu">
                 <a href="{{ route('sinhvien.profile') }}"
-                    class="student-menu-item {{ request()->routeIs('sinhvien.profile') || request()->routeIs('sinhvien.dashboard_sinhvien') ? 'active' : '' }}">
+                   class="student-menu-item {{ request()->routeIs('sinhvien.profile') || request()->routeIs('sinhvien.dashboard_sinhvien') ? 'active' : '' }}">
                     <span class="student-menu-icon">TT</span>
                     <span class="student-menu-copy">
                         <span class="student-menu-title">Thông tin sinh viên</span>
@@ -667,56 +679,65 @@
                     </span>
                 </a>
 
+                <a href="{{ route('sinhvien.events.open') }}"
+                   class="student-menu-item {{ request()->routeIs('sinhvien.events.open') ? 'active' : '' }}">
+                    <span class="student-menu-icon">DK</span>
+                    <span class="student-menu-copy">
+                        <span class="student-menu-title">Đăng ký hoạt động</span>
+                        <span class="student-menu-subtitle">Xem hoạt động đang mở</span>
+                    </span>
+                </a>
+
                 <a href="{{ route('sinhvien.qr') }}"
-                    class="student-menu-item {{ request()->routeIs('sinhvien.qr') ? 'active' : '' }}">
+                   class="student-menu-item {{ request()->routeIs('sinhvien.qr') ? 'active' : '' }}">
                     <span class="student-menu-icon">QR</span>
                     <span class="student-menu-copy">
                         <span class="student-menu-title">Mã QR cá nhân</span>
-                        <span class="student-menu-subtitle">Hiển thị, in và tải</span>
+                        <span class="student-menu-subtitle">Hiển thị và tải về</span>
                     </span>
                 </a>
 
                 <a href="{{ route('sinhvien.attendance_result') }}"
-                    class="student-menu-item {{ request()->routeIs('sinhvien.attendance_result') ? 'active' : '' }}">
+                   class="student-menu-item {{ request()->routeIs('sinhvien.attendance_result') ? 'active' : '' }}">
                     <span class="student-menu-icon">KQ</span>
                     <span class="student-menu-copy">
                         <span class="student-menu-title">Kết quả điểm danh</span>
-                        <span class="student-menu-subtitle">Lịch sử và tiến độ</span>
+                        <span class="student-menu-subtitle">Lịch sử tham gia</span>
                     </span>
                 </a>
 
                 <a href="{{ route('sinhvien.scan_qr') }}"
-                    class="student-menu-item {{ request()->routeIs('sinhvien.scan_qr') ? 'active' : '' }}">
+                   class="student-menu-item {{ request()->routeIs('sinhvien.scan_qr') ? 'active' : '' }}">
                     <span class="student-menu-icon">QM</span>
                     <span class="student-menu-copy">
                         <span class="student-menu-title">Quét mã điểm danh</span>
-                        <span class="student-menu-subtitle">Thao tác nhanh trên điện thoại</span>
+                        <span class="student-menu-subtitle">Quét QR hoạt động</span>
                     </span>
                 </a>
             </nav>
 
             @auth
-            <div class="student-sidebar-account">
-                <div class="student-sidebar-account-head">
-                    <span class="student-avatar">
-                        @if ($layoutAvatarUrl)
-                        <img src="{{ $layoutAvatarUrl }}" alt="Avatar {{ $layoutDisplayName }}">
-                        @else
-                        {{ mb_strtoupper(mb_substr($layoutDisplayName ?? 'S', 0, 1)) }}
-                        @endif
-                    </span>
+                <div class="student-sidebar-account">
+                    <div class="student-sidebar-account-head">
+                        <span class="student-avatar">
+                            @if ($layoutAvatarUrl)
+                                <img src="{{ $layoutAvatarUrl }}" alt="Avatar {{ $layoutDisplayName }}">
+                            @else
+                                {{ mb_strtoupper(mb_substr($layoutDisplayName ?? 'S', 0, 1)) }}
+                            @endif
+                        </span>
 
-                    <div class="student-sidebar-account-meta">
-                        <div class="student-sidebar-account-name">{{ $layoutDisplayName }}</div>
-                        <div class="student-sidebar-account-code">{{ $layoutDisplayCode }}</div>
+                        <div class="student-sidebar-account-meta">
+                            <div class="student-sidebar-account-name">{{ $layoutDisplayName }}</div>
+                            <div class="student-sidebar-account-code">{{ $layoutDisplayCode }}</div>
+                        </div>
                     </div>
-                </div>
 
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="logout-btn-sidebar">Đăng xuất</button>
-                </form>
-            </div>
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="logout-btn-sidebar">Đăng xuất</button>
+                    </form>
+                </div>
             @endauth
         </aside>
 
@@ -729,59 +750,75 @@
                         <div class="student-topbar-copy">
                             <div class="student-topbar-role">Sinh viên</div>
                             <div class="student-topbar-title">@yield('student_title', 'Cổng Sinh Viên')</div>
-                            <div class="student-topbar-subtitle">@yield('student_subtitle', 'Theo dõi thông tin, mã QR và các thao tác cá nhân')</div>
+                            <div class="student-topbar-subtitle">@yield('student_subtitle', 'Theo dõi hoạt động, mã QR và điểm danh của bạn')</div>
                         </div>
                     </div>
 
                     <div class="student-topbar-right">
                         @auth
-                        <button type="button" class="student-account-trigger" data-account-toggle aria-expanded="false">
-                            <span class="student-avatar">
-                                @if ($layoutAvatarUrl)
-                                <img src="{{ $layoutAvatarUrl }}" alt="Avatar {{ $layoutDisplayName }}">
-                                @else
-                                {{ mb_strtoupper(mb_substr($layoutDisplayName ?? 'S', 0, 1)) }}
-                                @endif
-                            </span>
-
-                            <span class="student-account-meta">
-                                <span class="student-account-name">{{ $layoutDisplayName }}</span>
-                                <span class="student-account-code">{{ $layoutDisplayCode }}</span>
-                            </span>
-
-                            <span class="student-account-chevron">▾</span>
-                        </button>
-
-                        <div class="student-account-menu" data-account-menu>
-                            <div class="student-account-panel">
+                            <button type="button" class="student-account-trigger" data-account-toggle aria-expanded="false">
                                 <span class="student-avatar">
                                     @if ($layoutAvatarUrl)
-                                    <img src="{{ $layoutAvatarUrl }}" alt="Avatar {{ $layoutDisplayName }}">
+                                        <img src="{{ $layoutAvatarUrl }}" alt="Avatar {{ $layoutDisplayName }}">
                                     @else
-                                    {{ mb_strtoupper(mb_substr($layoutDisplayName ?? 'S', 0, 1)) }}
+                                        {{ mb_strtoupper(mb_substr($layoutDisplayName ?? 'S', 0, 1)) }}
                                     @endif
                                 </span>
 
-                                <div class="student-account-panel-meta">
-                                    <div class="student-account-panel-name">{{ $layoutDisplayName }}</div>
-                                    <div class="student-account-panel-code">{{ $layoutDisplayCode }}</div>
+                                <span class="student-account-meta">
+                                    <span class="student-account-name">{{ $layoutDisplayName }}</span>
+                                    <span class="student-account-code">{{ $layoutDisplayCode }}</span>
+                                </span>
+
+                                <span class="student-account-chevron">▾</span>
+                            </button>
+
+                            <div class="student-account-menu" data-account-menu>
+                                <div class="student-account-panel">
+                                    <span class="student-avatar">
+                                        @if ($layoutAvatarUrl)
+                                            <img src="{{ $layoutAvatarUrl }}" alt="Avatar {{ $layoutDisplayName }}">
+                                        @else
+                                            {{ mb_strtoupper(mb_substr($layoutDisplayName ?? 'S', 0, 1)) }}
+                                        @endif
+                                    </span>
+
+                                    <div class="student-account-panel-meta">
+                                        <div class="student-account-panel-name">{{ $layoutDisplayName }}</div>
+                                        <div class="student-account-panel-code">{{ $layoutDisplayCode }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="student-account-section">
+                                    <div class="student-account-section-label">Tài khoản</div>
+
+                                    <form action="{{ route('logout') }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="logout-btn-menu">Đăng xuất</button>
+                                    </form>
                                 </div>
                             </div>
-
-                            <div class="student-account-section">
-                                <div class="student-account-section-label">Tài khoản</div>
-
-                                <form action="{{ route('logout') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="logout-btn-menu">Đăng xuất</button>
-                                </form>
-                            </div>
-                        </div>
                         @endauth
                     </div>
                 </header>
 
                 <div class="student-content">
+                    @if(session('success') || session('error') || session('info'))
+                        <div class="student-flash-wrap">
+                            @if(session('success'))
+                                <div class="student-alert success">{{ session('success') }}</div>
+                            @endif
+
+                            @if(session('error'))
+                                <div class="student-alert error">{{ session('error') }}</div>
+                            @endif
+
+                            @if(session('info'))
+                                <div class="student-alert info">{{ session('info') }}</div>
+                            @endif
+                        </div>
+                    @endif
+
                     @yield('content')
                 </div>
             </div>
@@ -789,7 +826,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const body = document.body;
             const sidebar = document.querySelector('[data-student-sidebar]');
             const sidebarBackdrop = document.querySelector('[data-sidebar-backdrop]');
@@ -842,7 +879,7 @@
             sidebarBackdrop?.addEventListener('click', closeSidebar);
 
             document.querySelectorAll('.student-menu-item').forEach((item) => {
-                item.addEventListener('click', function() {
+                item.addEventListener('click', function () {
                     if (mobileWidth.matches) {
                         closeSidebar();
                     }
@@ -850,23 +887,23 @@
                 });
             });
 
-            accountToggle?.addEventListener('click', function(event) {
+            accountToggle?.addEventListener('click', function (event) {
                 event.stopPropagation();
                 toggleAccountMenu();
             });
 
-            accountMenu?.addEventListener('click', function(event) {
+            accountMenu?.addEventListener('click', function (event) {
                 event.stopPropagation();
             });
 
-            document.addEventListener('click', function(event) {
+            document.addEventListener('click', function (event) {
                 if (!accountMenu || !accountToggle) return;
                 if (!accountMenu.contains(event.target) && !accountToggle.contains(event.target)) {
                     closeAccountMenu();
                 }
             });
 
-            window.addEventListener('resize', function() {
+            window.addEventListener('resize', function () {
                 if (!mobileWidth.matches) {
                     closeSidebar();
                 }
@@ -876,7 +913,7 @@
                 }
             });
 
-            document.addEventListener('keydown', function(event) {
+            document.addEventListener('keydown', function (event) {
                 if (event.key === 'Escape') {
                     closeSidebar();
                     closeAccountMenu();
@@ -885,5 +922,4 @@
         });
     </script>
 </body>
-
 </html>

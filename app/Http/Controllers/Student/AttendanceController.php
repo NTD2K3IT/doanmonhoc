@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Concerns\HandlesCtxhSharedLogic;
 use App\Http\Controllers\Controller;
+use App\Models\DangKyHoatDong;
 use App\Models\DiemDanh;
 use App\Models\HoatDong;
 use Illuminate\Http\JsonResponse;
@@ -136,6 +137,17 @@ class AttendanceController extends Controller
                 'success' => false,
                 'message' => 'Không tìm thấy sự kiện tương ứng với QR đã quét.',
             ], 404);
+        }
+
+        $registered = DangKyHoatDong::where('maSV', $student->maSV)
+            ->where('maHoatDong', $event->maHoatDong)
+            ->exists();
+
+        if (!$registered) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn chưa đăng ký hoạt động này nên không thể điểm danh.',
+            ], 403);
         }
 
         if (!in_array($event->trangThai, ['Mở', 'open', 'Open'], true)) {

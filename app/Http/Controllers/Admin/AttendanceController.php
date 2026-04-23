@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\HandlesCtxhSharedLogic;
 use App\Http\Controllers\Controller;
+use App\Models\DangKyHoatDong;
 use App\Models\DiemDanh;
 use App\Models\HoatDong;
 use App\Models\Student;
@@ -98,6 +99,18 @@ class AttendanceController extends Controller
                 'success' => false,
                 'message' => 'Không tìm thấy sinh viên với mã đã quét.',
             ], 404);
+        }
+
+        $registered = DangKyHoatDong::query()
+            ->where('maSV', $student->maSV)
+            ->where('maHoatDong', $data['event_id'])
+            ->exists();
+
+        if (!$registered) {
+            return response()->json([
+                'success' => false,
+                'message' => "Sinh viên {$student->hoTen} ({$student->maSV}) chưa đăng ký hoạt động nên không thể điểm danh.",
+            ], 403);
         }
 
         $existingAttendance = DiemDanh::query()
