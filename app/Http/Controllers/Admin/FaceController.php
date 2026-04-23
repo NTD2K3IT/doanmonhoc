@@ -168,17 +168,34 @@ class FaceController extends Controller
             ], 404);
         }
 
-        DiemDanh::updateOrCreate(
-            [
-                'maSV' => $student->maSV,
-                'maHoatDong' => $data['event_id'],
-                'ngayDiemDanh' => $data['date'],
-            ],
-            [
-                'thoiGianDiemDanh' => now(),
-                'trangThai' => 'present',
-            ]
-        );
+        $existingAttendance = DiemDanh::query()
+            ->where('maSV', $student->maSV)
+            ->where('maHoatDong', $data['event_id'])
+            ->whereDate('ngayDiemDanh', $data['date'])
+            ->first();
+
+        if ($existingAttendance) {
+            return response()->json([
+                'success' => false,
+                'already_attended' => true,
+                'message' => "Sinh viên {$student->hoTen} ({$student->maSV}) đã điểm danh rồi.",
+                'student' => [
+                    'initial' => mb_strtoupper(mb_substr($student->hoTen ?? 'S', 0, 1)),
+                    'name' => $student->hoTen,
+                    'student_id' => $student->maSV,
+                    'status' => 'present',
+                    'time' => optional($existingAttendance->thoiGianDiemDanh)->format('d/m/Y H:i:s') ?? '',
+                ],
+            ], 409);
+        }
+
+        DiemDanh::create([
+            'maSV' => $student->maSV,
+            'maHoatDong' => $data['event_id'],
+            'ngayDiemDanh' => $data['date'],
+            'thoiGianDiemDanh' => now(),
+            'trangThai' => 'present',
+        ]);
 
         return response()->json([
             'success' => true,

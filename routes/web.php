@@ -47,8 +47,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/ctxh/diem-danh-khuon-mat', [AdminFaceController::class, 'faceAttendance'])->name('ctxh.face_attendance');
     Route::post('/ctxh/diem-danh-khuon-mat/scan', [AdminFaceController::class, 'saveFaceAttendance'])->name('ctxh.face_attendance.save');
 
-    Route::get('/ctxh/dang-ky-khuon-mat', [AdminFaceController::class, 'faceRegister'])->name('ctxh.face_register');
-    Route::post('/ctxh/dang-ky-khuon-mat', [AdminFaceController::class, 'storeFaceRegister'])->name('ctxh.face_register.store');
 });
 
 Route::middleware(['auth', 'role:sinhvien'])->group(function () {

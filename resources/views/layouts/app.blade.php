@@ -840,8 +840,7 @@
                     <a href="{{ route('ctxh.events') }}" class="menu-item {{ request()->routeIs('ctxh.events*') ? 'active' : '' }}">📗 Sự Kiện</a>
                     <a href="{{ route('ctxh.attendance') }}" class="menu-item {{ request()->routeIs('ctxh.attendance') ? 'active' : '' }}">✅ Điểm Danh</a>
                     <a href="{{ route('ctxh.summary') }}" class="menu-item {{ request()->routeIs('ctxh.summary') ? 'active' : '' }}">🧾 Tổng Kết</a>
-                    <a href="{{ route('ctxh.face_attendance') }}" class="menu-item {{ request()->routeIs('ctxh.face_attendance*') ? 'active' : '' }}">📷 Điểm Danh Khuôn Mặt</a>
-                    <a href="{{ route('ctxh.face_register') }}" class="menu-item {{ request()->routeIs('ctxh.face_register*') ? 'active' : '' }}">📸 Đăng ký khuôn mặt</a>
+
                 </nav>
             </aside>
 
