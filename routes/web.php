@@ -1,7 +1,14 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CTXHController;
+use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Admin\FaceController as AdminFaceController;
+use App\Http\Controllers\Admin\StudentController as AdminStudentController;
+use App\Http\Controllers\Admin\SummaryController as AdminSummaryController;
+use App\Http\Controllers\Student\AttendanceController as StudentAttendanceController;
+use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('home');
@@ -16,39 +23,32 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/ctxh/tong-quan', [CTXHController::class, 'dashboard'])->name('ctxh.dashboard');
+    Route::get('/ctxh/tong-quan', [AdminDashboardController::class, 'dashboard'])->name('ctxh.dashboard');
 
-    Route::get('/ctxh/sinh-vien', [CTXHController::class, 'students'])->name('ctxh.students');
-    Route::get('/ctxh/sinh-vien/them', [CTXHController::class, 'createStudent'])->name('ctxh.students.create');
-    Route::post('/ctxh/sinh-vien', [CTXHController::class, 'storeStudent'])->name('ctxh.students.store');
-    Route::get('/ctxh/sinh-vien/{student}/sua', [CTXHController::class, 'editStudent'])->name('ctxh.students.edit');
-    Route::put('/ctxh/sinh-vien/{student}', [CTXHController::class, 'updateStudent'])->name('ctxh.students.update');
-    Route::delete('/ctxh/sinh-vien/{student}', [CTXHController::class, 'destroyStudent'])->name('ctxh.students.destroy');
+    Route::get('/ctxh/sinh-vien', [AdminStudentController::class, 'students'])->name('ctxh.students');
+    Route::get('/ctxh/sinh-vien/them', [AdminStudentController::class, 'createStudent'])->name('ctxh.students.create');
+    Route::post('/ctxh/sinh-vien', [AdminStudentController::class, 'storeStudent'])->name('ctxh.students.store');
+    Route::get('/ctxh/sinh-vien/{student}/sua', [AdminStudentController::class, 'editStudent'])->name('ctxh.students.edit');
+    Route::put('/ctxh/sinh-vien/{student}', [AdminStudentController::class, 'updateStudent'])->name('ctxh.students.update');
+    Route::delete('/ctxh/sinh-vien/{student}', [AdminStudentController::class, 'destroyStudent'])->name('ctxh.students.destroy');
 
-    Route::get('/ctxh/su-kien', [CTXHController::class, 'events'])->name('ctxh.events');
-    Route::get('/ctxh/su-kien/them', [CTXHController::class, 'createEvent'])->name('ctxh.events.create');
-    Route::post('/ctxh/su-kien', [CTXHController::class, 'storeEvent'])->name('ctxh.events.store');
-    Route::get('/ctxh/su-kien/{hoatDong}/sua', [CTXHController::class, 'editEvent'])->name('ctxh.events.edit');
-    Route::put('/ctxh/su-kien/{hoatDong}', [CTXHController::class, 'updateEvent'])->name('ctxh.events.update');
+    Route::get('/ctxh/su-kien', [AdminEventController::class, 'events'])->name('ctxh.events');
+    Route::get('/ctxh/su-kien/them', [AdminEventController::class, 'createEvent'])->name('ctxh.events.create');
+    Route::post('/ctxh/su-kien', [AdminEventController::class, 'storeEvent'])->name('ctxh.events.store');
+    Route::get('/ctxh/su-kien/{hoatDong}/sua', [AdminEventController::class, 'editEvent'])->name('ctxh.events.edit');
+    Route::put('/ctxh/su-kien/{hoatDong}', [AdminEventController::class, 'updateEvent'])->name('ctxh.events.update');
 
-    Route::get('/ctxh/diem-danh', [CTXHController::class, 'attendance'])->name('ctxh.attendance');
+    Route::get('/ctxh/diem-danh', [AdminAttendanceController::class, 'attendance'])->name('ctxh.attendance');
+    Route::post('/ctxh/diem-danh/scan', [AdminAttendanceController::class, 'saveAttendance'])->name('ctxh.attendance.save');
 
+    Route::get('/ctxh/tong-ket', [AdminSummaryController::class, 'summary'])->name('ctxh.summary');
+    Route::get('/ctxh/tong-ket/xuat', [AdminSummaryController::class, 'exportSummaryExcel'])->name('ctxh.summary.export');
 
-    Route::get('/ctxh/tong-ket', [CTXHController::class, 'summary'])->name('ctxh.summary');
-    Route::get('/ctxh/tong-ket/xuat', [CTXHController::class, 'exportSummaryExcel'])->name('ctxh.summary.export');
+    Route::get('/ctxh/diem-danh-khuon-mat', [AdminFaceController::class, 'faceAttendance'])->name('ctxh.face_attendance');
+    Route::post('/ctxh/diem-danh-khuon-mat/scan', [AdminFaceController::class, 'saveFaceAttendance'])->name('ctxh.face_attendance.save');
 
-    Route::post('/ctxh/diem-danh/scan', [CTXHController::class, 'saveAttendance'])->name('ctxh.attendance.save');
-    Route::get('/ctxh/diem-danh-khuon-mat', [CTXHController::class, 'faceAttendance'])
-        ->name('ctxh.face_attendance');
-
-    Route::post('/ctxh/diem-danh-khuon-mat/scan', [CTXHController::class, 'saveFaceAttendance'])
-        ->name('ctxh.face_attendance.save');
-
-    Route::get('/ctxh/dang-ky-khuon-mat', [CTXHController::class, 'faceRegister'])
-        ->name('ctxh.face_register');
-
-    Route::post('/ctxh/dang-ky-khuon-mat', [CTXHController::class, 'storeFaceRegister'])
-        ->name('ctxh.face_register.store');
+    Route::get('/ctxh/dang-ky-khuon-mat', [AdminFaceController::class, 'faceRegister'])->name('ctxh.face_register');
+    Route::post('/ctxh/dang-ky-khuon-mat', [AdminFaceController::class, 'storeFaceRegister'])->name('ctxh.face_register.store');
 });
 
 Route::middleware(['auth', 'role:sinhvien'])->group(function () {
@@ -56,24 +56,24 @@ Route::middleware(['auth', 'role:sinhvien'])->group(function () {
         return redirect()->route('sinhvien.profile');
     })->name('sinhvien.dashboard_sinhvien');
 
-    Route::get('/sinhvien/thong-tin', [CTXHController::class, 'studentProfile'])
+    Route::get('/sinhvien/thong-tin', [StudentDashboardController::class, 'studentProfile'])
         ->name('sinhvien.profile');
 
-    Route::get('/sinhvien/ma-qr', [CTXHController::class, 'studentQrCode'])
+    Route::get('/sinhvien/ma-qr', [StudentDashboardController::class, 'studentQrCode'])
         ->name('sinhvien.qr');
 
-    Route::put('/sinhvien/ho-so', [CTXHController::class, 'updateStudentProfile'])
+    Route::put('/sinhvien/ho-so', [StudentDashboardController::class, 'updateStudentProfile'])
         ->name('sinhvien.profile.update');
 
-    Route::put('/sinhvien/doi-mat-khau', [CTXHController::class, 'updateStudentPassword'])
+    Route::put('/sinhvien/doi-mat-khau', [StudentDashboardController::class, 'updateStudentPassword'])
         ->name('sinhvien.password.update');
 
-    Route::get('/sinhvien/ket-qua-diem-danh', [CTXHController::class, 'studentAttendanceResult'])
+    Route::get('/sinhvien/ket-qua-diem-danh', [StudentAttendanceController::class, 'studentAttendanceResult'])
         ->name('sinhvien.attendance_result');
 
-    Route::get('/sinhvien/quet-ma-diem-danh', [CTXHController::class, 'studentScanQrPage'])
+    Route::get('/sinhvien/quet-ma-diem-danh', [StudentAttendanceController::class, 'studentScanQrPage'])
         ->name('sinhvien.scan_qr');
 
-    Route::post('/sinhvien/quet-ma-diem-danh/check-in', [CTXHController::class, 'studentCheckInByEventQr'])
+    Route::post('/sinhvien/quet-ma-diem-danh/check-in', [StudentAttendanceController::class, 'studentCheckInByEventQr'])
         ->name('sinhvien.scan_qr.check_in');
 });
